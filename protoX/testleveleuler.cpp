@@ -73,7 +73,7 @@ int main() {
     LevelBoxData<double, OP::numState()> LU(layout, OP::ghost());
     LevelOp<BoxOp_Euler, double> integrator(layout, dx);
     
-    
+
     integrator(LU,U);
 
     return 0;

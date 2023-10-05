@@ -3,6 +3,7 @@
 #define _BOX_OP_EULER_
 
 #include "Proto.H"
+#include "shim.hpp"
 
 #define NUMCOMPS DIM+2
 
@@ -233,24 +234,26 @@ class BoxOp_Euler : public BoxOp<T, NUMCOMPS, 1, MEM>
         T dx = this->dx()[0];
         PR_TIME("BoxOp_Euler::operator()");        
         // COMPUTE W_AVE
+        std::cout << "begin computation" << std::endl;
         a_Rhs.setVal(0.0);
         Vector W_bar = forall<double, NUMCOMPS>(f_consToPrim, a_U, gamma);
         Vector U = Operator::deconvolve(a_U);
-        Vector W = forall<double, NUMCOMPS>(f_consToPrim, U, gamma);
-        Vector W_ave = Operator::_convolve(W, W_bar);
+        // Vector W = forall<double, NUMCOMPS>(f_consToPrim, U, gamma);
+        // Vector W_ave = Operator::_convolve(W, W_bar);
         
-        // COMPUTE MAX WAVE SPEED
-        Box rangeBox = a_U.box().grow(-ghost());
-        Scalar uabs = forall<double>(f_waveSpeedBound, rangeBox, W, gamma);
-        umax = uabs.absMax();
+        // // COMPUTE MAX WAVE SPEED
+        // Box rangeBox = a_U.box().grow(-ghost());
+        // Scalar uabs = forall<double>(f_waveSpeedBound, rangeBox, W, gamma);
+        // umax = uabs.absMax();
 
-        // COMPUTE DIV FLUXES
-        for (int dir = 0; dir < DIM; dir++)
-        {
-            computeFlux(a_fluxes[dir], W_ave, dir);
-            a_Rhs += m_divergence[dir](a_fluxes[dir]);
-        }
-        a_Rhs *= (a_scale / dx); //Assuming isotropic grid spacing
+        // // COMPUTE DIV FLUXES
+        // for (int dir = 0; dir < DIM; dir++)
+        // {
+        //     computeFlux(a_fluxes[dir], W_ave, dir);
+        //     a_Rhs += m_divergence[dir](a_fluxes[dir]);
+        // }
+        // a_Rhs *= (a_scale / dx); //Assuming isotropic grid spacing
+        std::cout << "end computation" << std::endl;
     }
 #ifdef PR_AMR
   static inline void generateTags(
