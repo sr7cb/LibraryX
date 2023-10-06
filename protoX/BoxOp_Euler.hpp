@@ -238,19 +238,19 @@ class BoxOp_Euler : public BoxOp<T, NUMCOMPS, 1, MEM>
         a_Rhs.setVal(0.0);
         Vector W_bar = forall<double, NUMCOMPS>(f_consToPrim, a_U, gamma);
         Vector U = Operator::deconvolve(a_U);
-        // Vector W = forall<double, NUMCOMPS>(f_consToPrim, U, gamma);
-        // Vector W_ave = Operator::_convolve(W, W_bar);
+        Vector W = forall<double, NUMCOMPS>(f_consToPrim, U, gamma);
+        Vector W_ave = Operator::_convolve(W, W_bar);
         
         // // COMPUTE MAX WAVE SPEED
-        // Box rangeBox = a_U.box().grow(-ghost());
-        // Scalar uabs = forall<double>(f_waveSpeedBound, rangeBox, W, gamma);
-        // umax = uabs.absMax();
+        Box rangeBox = a_U.box().grow(-ghost());
+        Scalar uabs = forall<double>(f_waveSpeedBound, rangeBox, W, gamma);
+        umax = uabs.absMax();
 
         // // COMPUTE DIV FLUXES
         // for (int dir = 0; dir < DIM; dir++)
         // {
-        //     computeFlux(a_fluxes[dir], W_ave, dir);
-        //     a_Rhs += m_divergence[dir](a_fluxes[dir]);
+            // computeFlux(a_fluxes[dir], W_ave, dir);
+            // a_Rhs += m_divergence[dir](a_fluxes[dir]);
         // }
         // a_Rhs *= (a_scale / dx); //Assuming isotropic grid spacing
         std::cout << "end computation" << std::endl;
