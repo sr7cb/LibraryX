@@ -2,7 +2,7 @@
 #ifndef _BOX_OP_EULER_
 #define _BOX_OP_EULER_
 
-#include "Proto.H"
+#include "/Users/anant/Desktop/workspace/liftingcpp/proto/include/Proto.H"
 #include "shim.hpp"
 
 #define NUMCOMPS DIM+2
@@ -10,6 +10,12 @@
 using namespace Proto;
 typedef BoxData<double> Scalar;
 typedef BoxData<double, NUMCOMPS> Vector;
+
+Num& operator+=(const Num& rhs){
+
+      this->m_iNumber += rhs.m_iNumber;
+      return *this;
+}
 
 //State: [rho, G0, G1, ..., E]
 // Gi = rho*vi

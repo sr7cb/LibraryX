@@ -1,5 +1,5 @@
 #include <functional>
-#include "Proto.H"
+#include "/Users/anant/Desktop/workspace/liftingcpp/proto/include/Proto.H"
 #pragma once
 namespace Operator {
     #define NUMCOMPS DIM+2
@@ -24,6 +24,25 @@ namespace Operator {
 
 }
 
+namespace spiral_fftw {
+    template <class T=double, unsigned int C=1,
+    Operator::MemType MEM=MEMTYPE_DEFAULT,
+    unsigned char D=1, unsigned char E=1>
+    class BoxData : public Proto::BoxData<T, C, MEM, D, E>{
+        using Proto::BoxData<T, C, MEM, D, E>;
+
+        BoxData& operator+=(const BoxData& rhs){
+            std::cout << "We are inside operator+=" << std::endl;
+
+            this += rhs;
+            Proto::BoxData<T, C, MEM, D, E>::operator+=(rhs);
+            return *this;
+        }
+    };
+}
+
+
+
      template<typename T, unsigned int C=1,
         typename Func, typename... Srcs>
      Proto::BoxData<T, C> spiral_forall(const Func& a_F, Srcs&&... a_srcs){
@@ -35,3 +54,4 @@ namespace Operator {
 #define forall spiral_forall
 #define deconvolve spiral_fftw::deconvolve
 #define _convolve spiral_fftw::_convolve
+#define BoxData spiral_fftw::BoxData
