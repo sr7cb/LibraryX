@@ -1,5 +1,5 @@
 #include <iostream>
-#include "lib-conv/Convolution.cpp"
+#include "lib-conv/LibraryXProblem.hpp"
 #include <vector>
 
 void buildArray(double *input);
@@ -15,11 +15,10 @@ int main() {
   buildArray(symbol);
 
   std::vector<double*> args{output, input, symbol};
+  LibraryXProblem libraryXProblemFacade(args, sizes);
+  std::vector<double> output = libraryXProblemFacade.libraryXSpace(args, sizes);
 
-  Convolution convolutionFacade(args, sizes);
-  std::vector<double> result = convolutionFacade.convolveSpace(args, sizes);
-
-  for (double value : result) {
+  for (double value : output) {
     std::cout << value << std::endl;
   }
 
