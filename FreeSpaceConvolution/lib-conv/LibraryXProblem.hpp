@@ -1,22 +1,23 @@
 #include <vector>
-#include "MDDFTProblem.hpp"
-#include "IMDDFTProblem.hpp"
-#include "PointwiseMultiplier.hpp"
+
+#pragma once
 
 class LibraryXProblem {
-public:
 
-    LibraryXProblem(const std::vector<int>& sizes) :
-        convolutionProblem(sizes) {}
-    
+public:
+LibraryXProblem() {}
+    LibraryXProblem (const std::vector<int>& sizes) {    }
+//what is the use of this constructor? 
+    LibraryXProblem (const std::vector<double>& input1,
+                    const std::vector<double>& input2, 
+                    const std::vector<int>& sizes) {
+        semantics (input1, input2, sizes);
+   }
+
     ~LibraryXProblem();
 
-    std::vector<double> libraryXSpace(const std::vector<double>& input1,
-                                  const std::vector<double>& input2, 
-                                  const std::vector<int>& sizes) {
-        convolutionProblem.semantics(input1, input2, sizes);
-    }
-    // private:
-    // Convolution convolutionProblem;
+    void semantics(const std::vector<double>& input1,
+                    const std::vector<double>& input2, 
+                    const std::vector<int>& sizes){}
 };
 
