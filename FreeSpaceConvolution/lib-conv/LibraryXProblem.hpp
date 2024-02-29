@@ -14,7 +14,7 @@ LibraryXProblem() {}
         semantics (input1, input2, sizes);
    }
 
-    ~LibraryXProblem();
+    //~LibraryXProblem();
 
     void semantics(const std::vector<double>& input1,
                     const std::vector<double>& input2, 

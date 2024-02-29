@@ -1,5 +1,8 @@
 #include <vector>
+#include <complex>
 #include "LibraryXProblem.hpp"
+
+#pragma once
 
 class IMDDFTProblem : public LibraryXProblem{
 public:
@@ -7,9 +10,9 @@ public:
         // Initialize any necessary data or objects for IMDDFT
     }
 
-    ~IMDDFTProblem();
+    //~IMDDFTProblem();
 
-    void semantics(const std::vector<double>& input, double* output) {
+    void semantics(std::vector<std::complex<double> > input, double* output) {
         // Implement IMDDFT logic here
     }
 };
