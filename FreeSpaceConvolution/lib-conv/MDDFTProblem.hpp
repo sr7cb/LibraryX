@@ -5,13 +5,17 @@
 
 class MDDFTProblem : public LibraryXProblem{
 public:
-    MDDFTProblem(const std::vector<int>& sizes) {
-        // Initialize any necessary data or objects for IMDDFT
+    MDDFTProblem(std::vector<double*>& args,
+                 std::vector<int>& sizes) : 
+                 args(args), sizes(sizes) {
+        semantics();                
     }
 
-    //~MDDFTProblem();
+private:
+    std::vector<double*> args;
+    std::vector<int> sizes;
 
-    void semantics(double* input, std::vector<std::complex<double> > output) {
-        // Implement IMDDFT logic here
-    } //different from libraryXProblem semantics? overrriding? or need this?
+    void semantics() {
+
+    }
 };

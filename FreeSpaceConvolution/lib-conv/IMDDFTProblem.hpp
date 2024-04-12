@@ -6,13 +6,17 @@
 
 class IMDDFTProblem : public LibraryXProblem{
 public:
-    IMDDFTProblem(const std::vector<int>& sizes) {
-        // Initialize any necessary data or objects for IMDDFT
+    IMDDFTProblem(std::vector<double*>& args,
+                    std::vector<int>& sizes) : 
+                    args(args), sizes(sizes){
+        semantics();             
     }
 
-    //~IMDDFTProblem();
+private:
+    std::vector<double*> args;
+    std::vector<int> sizes;
 
-    void semantics(std::vector<std::complex<double> > input, double* output) {
-        // Implement IMDDFT logic here
+    void semantics() {
+
     }
 };
