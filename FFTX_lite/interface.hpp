@@ -338,8 +338,10 @@ public:
   /** Sets <tt>FFTXProblem::name</tt>. */
     void setName(std::string name);
 
+    void step(NDTensor<double> X, NDTensor<double> Y);
+
   /** Performs the transform. */
-    void step();
+    void transform();
 
   /** \internal */
     std::string semantics2();
@@ -348,7 +350,9 @@ public:
     virtual void randomProblemInstance() = 0;
 
   /** \internal */
-    virtual void semantics() = 0;
+    // virtual void semantics() = 0;
+
+    virtual void semantics(NDTensor<double> X, NDTensor<double> Y, NDTensor<std::complex<double>> symbol, WarpXconfig conf) = 0;
 
   /** \internal */
     float gpuTime;
@@ -394,7 +398,7 @@ inline std::string FFTXProblem::semantics2() {
     std::stringstream out; 
     std::streambuf *coutbuf = std::cout.rdbuf(out.rdbuf()); //save old buf
     getImportAndConf();
-    semantics();
+    semantics((*(NDTensor<double>*)args.at(2)), (*(NDTensor<double>*)args.at(3)), (*(NDTensor<std::complex<double>>*)args.at(1)), (*(WarpXconfig*)args.at(0)));
     printJITBackend(name, sizes);
     std::cout.rdbuf(coutbuf);
     std::string script = out.str();
@@ -431,8 +435,14 @@ inline std::string FFTXProblem::semantics2() {
     // return nullptr;
 }
 
+inline void FFTXProblem::step(NDTensor<double> X, NDTensor<double> Y) {
+    args.push_back(&X);
+    args.push_back(&Y);
+    // transform();
+    semantics((*(NDTensor<double>*)args.at(2)), (*(NDTensor<double>*)args.at(3)), (*(NDTensor<std::complex<double>>*)args.at(1)), (*(WarpXconfig*)args.at(0)));
+}
 
-inline void FFTXProblem::step(){
+inline void FFTXProblem::transform(){
     
     // transformTuple_t *tupl = getLibTransform(name, sizes);
     // if(tupl != nullptr) { //check if fixed library has transform

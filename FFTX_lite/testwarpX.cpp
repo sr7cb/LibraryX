@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "domainx.hpp"
-#include "interface.hpp"
+#include <complex>
 
 struct WarpXconfig{
     int n = 80;
@@ -16,29 +16,36 @@ struct WarpXconfig{
     double ep0var = 10;
     double c2 = cvar*cvar;
     double invep0 = 1/ep0var; 
-}config;
+    NDTensor<std::complex<double>> symbol;
+};
 
+#include "interface.hpp"
 #include "WarpXObj.hpp"
+#include "libraryx.hpp"
+
+NDTensor<std::complex<double>> warpXBuildSymbol(WarpXconfig w) {
+  return NDTensor<std::complex<double>>(8, {w.nf,w.n,w.n});
+}
 
 int main() {
-    int n = 80;
-    int m = 80;
-    int k = 80;
-
-    std::vector<int> sizes{n,m,k};
-    NDTensor input(11, sizes);
-    NDTensor output(6, sizes);
-    NDTensor symbol(11, sizes);
-    input.buildTensor();
-    symbol.buildTensor();
-
+  
     WarpXconfig conf;
-    std::vector<void*> args{(void*)&input, (void*)&output, (void*)&symbol, (void*)&conf};
-    WarpXProblem warpX(args, sizes, "warpX");
 
-    warpX.step();
+    NDTensor<double> input(11, {conf.n,conf.n,conf.n});
+    NDTensor<double> output(6, {conf.n,conf.n,conf.n});
+   
+    input.fillRandom();//ingest(argv[1]);
+    conf.symbol = warpXBuildSymbol(conf);//argv[2]
 
-    // std::cout <<  warpX.residual() << std::endl; 
+    WarpXProblem warpX(conf);
+
+    warpX.step(output,input);
+
+    std::cout << "WarpX accuracy: " << warpX.residual() << std::endl; 
     
     return 0;
 }
+
+
+
+
