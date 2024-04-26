@@ -6,7 +6,9 @@ class LibraryXProblem {
 
 public:
 LibraryXProblem() {}
-    LibraryXProblem (const std::vector<int>& sizes) {}
+
+LibraryXProblem(std::initializer_list<void*>& args,
+                  std::vector<int>& sizes){}
 
     virtual void semantics() = 0;
                  
