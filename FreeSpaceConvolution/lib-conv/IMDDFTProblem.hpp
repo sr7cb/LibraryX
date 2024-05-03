@@ -6,14 +6,14 @@
 
 class IMDDFTProblem : public LibraryXProblem{
 public:
-    IMDDFTProblem(std::initializer_list<double*> args,
+    IMDDFTProblem(std::initializer_list<void*> args,
                   std::vector<int> sizes) : 
                   args(args), sizes(sizes) {
         semantics();               
     }
 
 private:
-    std::initializer_list<double*> args;
+    std::initializer_list<void*> args;
     std::vector<int> sizes;
 
     void semantics() {

@@ -8,14 +8,14 @@
 
 class PointwiseMultiplier : public LibraryXProblem{
 public:
-    PointwiseMultiplier(std::initializer_list<double*> args,
+    PointwiseMultiplier(std::initializer_list<void*> args,
                   std::vector<int> sizes) : 
                   args(args), sizes(sizes) {
         semantics();               
     }
 
 private:
-    std::initializer_list<double*> args;
+    std::initializer_list<void*> args;
     std::vector<int> sizes;
 
     void semantics() {
