@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Proto.H"
-#include "BoxOp_Euler.hpp"
+#include "BoxOp_Euler2.hpp"
 template<typename T, unsigned int C, MemType MEM>
 PROTO_KERNEL_START 
 void f_initialize_(Point& a_pt, Var<T, C, MEM>& a_U, double a_dx, const double a_gamma)

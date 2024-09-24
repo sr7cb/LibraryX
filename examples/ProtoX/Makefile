@@ -12,3 +12,6 @@ proto_cuda:
 
 proto_hip:
 	hipcc -std=c++17 -I$(PROTO_PATH)/include -I. -Wunused-result -O3 $(CONSTANTS) testleveleuler.cpp 
+
+proto_mpi:
+	g++ -std=c++17 -I$(PROTO_PATH)/include -I. -Wunused-result -O3 $(CONSTANTS) -DMPI=on  testleveleuler.cpp 

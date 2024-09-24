@@ -1,0 +1,184 @@
+In file included from testleveleuler.cpp:3:
+BoxOp_Euler.hpp: In function ‘void f_upwindState_(Proto::Var<T, 4, MEM>&, const Proto::Var<T, 4, MEM>&, const Proto::Var<T, 4, MEM>&, int, MyDouble2)’:
+BoxOp_Euler.hpp:76:15: error: ambiguous overload for ‘operator>’ (operand types are ‘MyDouble2’ and ‘int’)
+   76 |     if (ustar > 0)
+      |         ~~~~~ ^ ~
+      |         |       |
+      |         |       int
+      |         MyDouble2
+BoxOp_Euler.hpp:76:15: note: candidate: ‘operator>(double, int)’ (built-in)
+   76 |     if (ustar > 0)
+      |         ~~~~~~^~~
+In file included from BoxOp_Euler.hpp:5:
+shim.hpp:452:10: note: candidate: ‘bool MyDouble2::operator>(const MyDouble2&) const’
+  452 |     bool operator>(const MyDouble2& other) const {
+      |          ^~~~~~~~
+BoxOp_Euler.hpp:94:14: error: ambiguous overload for ‘operator+’ (operand types are ‘MyDouble2’ and ‘double’)
+   94 |     if (cbar + sign*ubar > 0)
+      |         ~~~~ ^ ~~~~~~~~~
+      |         |          |
+      |         MyDouble2  double
+BoxOp_Euler.hpp:94:14: note: candidate: ‘operator+(double, double)’ (built-in)
+   94 |     if (cbar + sign*ubar > 0)
+      |         ~~~~~^~~~~~~~~~~
+shim.hpp:402:15: note: candidate: ‘MyDouble2 MyDouble2::operator+(const MyDouble2&) const’
+  402 |     MyDouble2 operator+(const MyDouble2& other) const {
+      |               ^~~~~~~~
+BoxOp_Euler.hpp: In instantiation of ‘void BoxOp_Euler<T, MEM>::init() [with T = double; Proto::MemType MEM = Proto::HOST]’:
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:52:26:   required from ‘void Proto::LevelOp<OpType, T, BCType, MEM>::define(Proto::DisjointBoxLayout&, Proto::Array<T, 2>) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:34:11:   required from ‘void Proto::LevelOp<OpType, T, BCType, MEM>::define(Proto::DisjointBoxLayout&, T) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:14:11:   required from ‘Proto::LevelOp<OpType, T, BCType, MEM>::LevelOp(Proto::DisjointBoxLayout&, T) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+testleveleuler.cpp:74:55:   required from here
+BoxOp_Euler.hpp:171:29: error: no match for ‘operator=’ (operand types are ‘Proto::Stencil<double>’ and ‘Proto::Stencil<MyDouble2>’)
+  171 |             m_interp_H[dir] = Stencil<MyDouble>::CellToFaceH(dir);
+      |             ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/sanilr/proto/include/base/Proto_BoxData.H:14,
+                 from /home/sanilr/proto/include/Proto.H:22,
+                 from BoxOp_Euler.hpp:4:
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note: candidate: ‘Proto::Stencil<double>& Proto::Stencil<double>::operator=(const Proto::Stencil<double>&)’
+  228 |     class Stencil {
+      |           ^~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note:   no known conversion for argument 1 from ‘Proto::Stencil<MyDouble2>’ to ‘const Proto::Stencil<double>&’
+BoxOp_Euler.hpp:172:29: error: no match for ‘operator=’ (operand types are ‘Proto::Stencil<double>’ and ‘Proto::Stencil<MyDouble2>’)
+  172 |             m_interp_L[dir] = Stencil<MyDouble>::CellToFaceL(dir);
+      |             ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note: candidate: ‘Proto::Stencil<double>& Proto::Stencil<double>::operator=(const Proto::Stencil<double>&)’
+  228 |     class Stencil {
+      |           ^~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note:   no known conversion for argument 1 from ‘Proto::Stencil<MyDouble2>’ to ‘const Proto::Stencil<double>&’
+BoxOp_Euler.hpp:173:31: error: no match for ‘operator=’ (operand types are ‘Proto::Stencil<double>’ and ‘Proto::Stencil<MyDouble2>’)
+  173 |             m_divergence[dir] = Stencil<MyDouble>::FluxDivergence(dir);
+      |             ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note: candidate: ‘Proto::Stencil<double>& Proto::Stencil<double>::operator=(const Proto::Stencil<double>&)’
+  228 |     class Stencil {
+      |           ^~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note:   no known conversion for argument 1 from ‘Proto::Stencil<MyDouble2>’ to ‘const Proto::Stencil<double>&’
+BoxOp_Euler.hpp:174:32: error: no match for ‘operator=’ (operand types are ‘Proto::Stencil<double>’ and ‘Proto::Stencil<MyDouble2>’)
+  174 |             m_laplacian_f[dir] = Stencil<MyDouble>::LaplacianFace(dir);
+      |             ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note: candidate: ‘Proto::Stencil<double>& Proto::Stencil<double>::operator=(const Proto::Stencil<double>&)’
+  228 |     class Stencil {
+      |           ^~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note:   no known conversion for argument 1 from ‘Proto::Stencil<MyDouble2>’ to ‘const Proto::Stencil<double>&’
+In file included from /home/sanilr/proto/include/base/Proto_Stencil.H:984:
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H: In instantiation of ‘static Proto::Stencil<T> Proto::Stencil<T>::CellToFaceH(int, int) [with T = MyDouble2]’:
+BoxOp_Euler.hpp:171:61:   required from ‘void BoxOp_Euler<T, MEM>::init() [with T = double; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:52:26:   required from ‘void Proto::LevelOp<OpType, T, BCType, MEM>::define(Proto::DisjointBoxLayout&, Proto::Array<T, 2>) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:34:11:   required from ‘void Proto::LevelOp<OpType, T, BCType, MEM>::define(Proto::DisjointBoxLayout&, T) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:14:11:   required from ‘Proto::LevelOp<OpType, T, BCType, MEM>::LevelOp(Proto::DisjointBoxLayout&, T) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+testleveleuler.cpp:74:55:   required from here
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H:229:18: error: no match for ‘operator*’ (operand types are ‘Proto::Stencil<MyDouble2>’ and ‘Proto::Stencil<double>’)
+  229 |         return S * (1.0*Shift(Point::Basis(a_dir, -1)));
+      |                ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/sanilr/proto/include/base/Proto_Stencil.H:983:
+/home/sanilr/proto/include/base/implem/Proto_StencilImplem.H:64:12: note: candidate: ‘Proto::Stencil<T> Proto::Stencil<T>::operator*(const Proto::Stencil<T>&) const [with T = MyDouble2]’
+   64 | Stencil<T> Stencil<T>::operator* (const Stencil<T>& a_stencil) const
+      |            ^~~~~~~~~~
+/home/sanilr/proto/include/base/implem/Proto_StencilImplem.H:64:53: note:   no known conversion for argument 1 from ‘Proto::Stencil<double>’ to ‘const Proto::Stencil<MyDouble2>&’
+   64 | Stencil<T> Stencil<T>::operator* (const Stencil<T>& a_stencil) const
+      |                                   ~~~~~~~~~~~~~~~~~~^~~~~~~~~
+/home/sanilr/proto/include/base/implem/Proto_StencilImplem.H:83:12: note: candidate: ‘Proto::Stencil<T> Proto::Stencil<T>::operator*(T) const [with T = MyDouble2]’
+   83 | Stencil<T> Stencil<T>::operator*(const T a_coef) const
+      |            ^~~~~~~~~~
+/home/sanilr/proto/include/base/implem/Proto_StencilImplem.H:83:42: note:   no known conversion for argument 1 from ‘Proto::Stencil<double>’ to ‘MyDouble2’
+   83 | Stencil<T> Stencil<T>::operator*(const T a_coef) const
+      |                                  ~~~~~~~~^~~~~~
+In file included from /home/sanilr/proto/include/base/Proto_Array.H:245,
+                 from /home/sanilr/proto/include/Proto.H:18:
+/home/sanilr/proto/include/base/implem/Proto_ArrayImplem.H:315:20: note: candidate: ‘template<class T, long unsigned int N> Proto::Array<T, N>& Proto::operator*(int, Array<T, N>&)’
+  315 | inline Array<T,N>& operator*(int a_scale, Array<T,N>& a_array) {
+      |                    ^~~~~~~~
+/home/sanilr/proto/include/base/implem/Proto_ArrayImplem.H:315:20: note:   template argument deduction/substitution failed:
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H:229:18: note:   ‘Proto::Stencil<double>’ is not derived from ‘Proto::Array<T, N>’
+  229 |         return S * (1.0*Shift(Point::Basis(a_dir, -1)));
+      |                ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/sanilr/proto/include/base/implem/Proto_ArrayImplem.H:325:20: note: candidate: ‘template<class T, long unsigned int N> Proto::Array<T, N>& Proto::operator*(double, Array<T, N>&)’
+  325 | inline Array<T,N>& operator*(double a_scale, Array<T,N>& a_array) {
+      |                    ^~~~~~~~
+/home/sanilr/proto/include/base/implem/Proto_ArrayImplem.H:325:20: note:   template argument deduction/substitution failed:
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H:229:18: note:   ‘Proto::Stencil<double>’ is not derived from ‘Proto::Array<T, N>’
+  229 |         return S * (1.0*Shift(Point::Basis(a_dir, -1)));
+      |                ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:907:19: note: candidate: ‘template<class T> Proto::Stencil<T> Proto::operator*(T, Shift)’
+  907 | inline Stencil<T> operator*(T a_coef, Shift a_shift) { return Stencil<T>(a_shift, a_coef); }
+      |                   ^~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:907:19: note:   template argument deduction/substitution failed:
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H:229:18: note:   cannot convert ‘Proto::operator*(T, Shift) [with T = double](Proto::Shift(Proto::Point::Basis(int, int)(-1)))’ (type ‘Proto::Stencil<double>’) to type ‘Proto::Shift’
+  229 |         return S * (1.0*Shift(Point::Basis(a_dir, -1)));
+      |                ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:915:19: note: candidate: ‘template<class T> Proto::Stencil<T> Proto::operator*(T, Stencil<T>)’
+  915 | inline Stencil<T> operator*(T a_coef, const Stencil<T> a_stencil) { return a_stencil*a_coef; }
+      |                   ^~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:915:19: note:   template argument deduction/substitution failed:
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H:229:18: note:   deduced conflicting types for parameter ‘T’ (‘Proto::Stencil<MyDouble2>’ and ‘double’)
+  229 |         return S * (1.0*Shift(Point::Basis(a_dir, -1)));
+      |                ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/sanilr/proto/include/Proto.H:17:
+/home/sanilr/proto/include/base/Proto_Point.H:515:18: note: candidate: ‘Proto::Point Proto::operator*(int, Point)’
+  515 |     inline Point operator*(int a_scale, Point a_pt) { return (a_pt*a_scale); }
+      |                  ^~~~~~~~
+/home/sanilr/proto/include/base/Proto_Point.H:515:32: note:   no known conversion for argument 1 from ‘Proto::Stencil<MyDouble2>’ to ‘int’
+  515 |     inline Point operator*(int a_scale, Point a_pt) { return (a_pt*a_scale); }
+      |                            ~~~~^~~~~~~
+In file included from /home/sanilr/proto/include/base/Proto_CoordPermutation.H:99,
+                 from /home/sanilr/proto/include/Proto.H:20:
+/home/sanilr/proto/include/base/implem/Proto_CoordPermutationImplem.H:316:18: note: candidate: ‘Proto::CoordPermutation Proto::operator*(const CoordPermutation&, const CoordPermutation&)’
+  316 | CoordPermutation operator*(const CoordPermutation& a_A, const CoordPermutation& a_B)
+      |                  ^~~~~~~~
+/home/sanilr/proto/include/base/implem/Proto_CoordPermutationImplem.H:316:52: note:   no known conversion for argument 1 from ‘Proto::Stencil<MyDouble2>’ to ‘const Proto::CoordPermutation&’
+  316 | CoordPermutation operator*(const CoordPermutation& a_A, const CoordPermutation& a_B)
+      |                            ~~~~~~~~~~~~~~~~~~~~~~~~^~~
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H: In instantiation of ‘static Proto::Stencil<T> Proto::Stencil<T>::CellToFace(int, Proto::Side::LoHiSide, int) [with T = MyDouble2]’:
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H:226:26:   required from ‘static Proto::Stencil<T> Proto::Stencil<T>::CellToFaceH(int, int) [with T = MyDouble2]’
+BoxOp_Euler.hpp:171:61:   required from ‘void BoxOp_Euler<T, MEM>::init() [with T = double; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:52:26:   required from ‘void Proto::LevelOp<OpType, T, BCType, MEM>::define(Proto::DisjointBoxLayout&, Proto::Array<T, 2>) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:34:11:   required from ‘void Proto::LevelOp<OpType, T, BCType, MEM>::define(Proto::DisjointBoxLayout&, T) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:14:11:   required from ‘Proto::LevelOp<OpType, T, BCType, MEM>::LevelOp(Proto::DisjointBoxLayout&, T) [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST]’
+testleveleuler.cpp:74:55:   required from here
+/home/sanilr/proto/include/base/implem/Proto_StencilDefs.H:126:13: error: no match for ‘operator=’ (operand types are ‘Proto::Stencil<MyDouble2>’ and ‘Proto::Stencil<double>’)
+  126 |         ret = .5*Shift::Basis(a_dir, -1) + .5*Shift::Zeros();
+      |         ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note: candidate: ‘Proto::Stencil<MyDouble2>& Proto::Stencil<MyDouble2>::operator=(const Proto::Stencil<MyDouble2>&)’
+  228 |     class Stencil {
+      |           ^~~~~~~
+/home/sanilr/proto/include/base/Proto_Stencil.H:228:11: note:   no known conversion for argument 1 from ‘Proto::Stencil<double>’ to ‘const Proto::Stencil<MyDouble2>&’
+In file included from /home/sanilr/proto/include/base/Proto_BoxData.H:1537:
+BoxOp_Euler.hpp: In instantiation of ‘void struct_f_consToPrim_::operator()(T ...) const [with T = {Proto::Var<MyDouble2, 4, Proto::HOST, 1, 1>, Proto::Var<double, 4, Proto::HOST, 1, 1>, double}]’:
+/home/sanilr/proto/include/base/implem/Proto_ForallImplem.H:438:6:   required from ‘void Proto::pencilFunc(const Func&, int, T ...) [with Func = struct_f_consToPrim_; T = {Var<MyDouble2, 4, Proto::HOST, 1, 1>, Var<double, 4, Proto::HOST, 1, 1>, double}]’
+/home/sanilr/proto/include/base/implem/Proto_ForallImplem.H:475:19:   required from ‘static void Proto::indexer<Func, Srcs>::cpu(int, int, const Proto::Box&, Func, Srcs ...) [with Func = struct_f_consToPrim_; Srcs = {Proto::Var<MyDouble2, 4, Proto::HOST, 1, 1>, Proto::Var<double, 4, Proto::HOST, 1, 1>, double}]’
+/home/sanilr/proto/include/base/Proto_macros.H:60:11:   required from ‘void protoLaunchKernelMemAsyncT(dim3, int, int, int, const Args& ...) [with Proto::MemType Type = Proto::HOST; Ker = Proto::indexer<struct_f_consToPrim_, Proto::Var<MyDouble2, 4, Proto::HOST, 1, 1>, Proto::Var<double, 4, Proto::HOST, 1, 1>, double>; Args = {int, int, Proto::Box, struct_f_consToPrim_, Proto::Var<MyDouble2, 4, Proto::HOST, 1, 1>, Proto::Var<double, 4, Proto::HOST, 1, 1>, double}]’
+/home/sanilr/proto/include/base/implem/Proto_ForallImplem.H:645:85:   required from ‘void Proto::makeVars(const Func&, Box, Srcs&& ...) [with Func = struct_f_consToPrim_; Srcs = {Var<MyDouble2, 4, Proto::HOST, 1, 1>, Var<double, 4, Proto::HOST, 1, 1>, double}]’
+/home/sanilr/proto/include/base/implem/Proto_ForallImplem.H:788:11:   required from ‘void Proto::protoForall(const Func&, Box, Srcs&& ...) [with Func = struct_f_consToPrim_; Srcs = {BoxData<MyDouble2, 4, Proto::HOST, 1, 1>&, const BoxData<double, 4, Proto::HOST, 1, 1>&, const double&}]’
+/home/sanilr/proto/include/base/implem/Proto_ForallImplem.H:127:14:   required from ‘void Proto::forallInPlaceBase(const Func&, Box, Srcs&& ...) [with Func = struct_f_consToPrim_; Srcs = {BoxData<MyDouble2, 4, Proto::HOST, 1, 1>&, const BoxData<double, 4, Proto::HOST, 1, 1>&, const double&}]’
+/home/sanilr/proto/include/base/implem/Proto_ForallImplem.H:205:20:   required from ‘Proto::BoxData<T, C, MEMTYPE, D, E> Proto::forall(const Func&, Srcs&& ...) [with T = MyDouble2; unsigned int C = 4; MemType MEMTYPE = Proto::HOST; unsigned char D = 1; unsigned char E = 1; Func = struct_f_consToPrim_; Srcs = {const BoxData<double, 4, Proto::HOST, 1, 1>&, const double&}]’
+BoxOp_Euler.hpp:238:50:   required from ‘void BoxOp_Euler<T, MEM>::operator()(Proto::BoxData<T, 4>&, Proto::Array<Proto::BoxData<T, 4>, 2>&, const Proto::BoxData<T, 4>&, T) const [with T = double; Proto::MemType MEM = Proto::HOST]’
+/home/sanilr/proto/include/base/implem/Proto_LevelOpImplem.H:106:20:   required from ‘void Proto::LevelOp<OpType, T, BCType, MEM>::operator()(LevelStateData&, const LevelStateData&, T) const [with OpType = BoxOp_Euler; T = double; BCType = Proto::PeriodicBC; Proto::MemType MEM = Proto::HOST; LevelStateData = Proto::LevelBoxData<double, 4, Proto::HOST, Proto::PR_CELL>]’
+testleveleuler.cpp:77:15:   required from here
+/home/sanilr/proto/include/base/implem/Proto_BoxDataImplem.H:6:74: error: no matching function for call to ‘f_consToPrim_(Proto::Var<MyDouble2, 4>&, Proto::Var<double, 4, Proto::HOST, 1, 1>&, double&)’
+    6 |     inline ACCEL_DECORATION void operator()(T... args) const { local_name(args...);} \
+BoxOp_Euler.hpp:51:1: note: in expansion of macro ‘PROTO_KERNEL_END’
+   51 | PROTO_KERNEL_END(f_consToPrim_, f_consToPrim)
+      | ^~~~~~~~~~~~~~~~
+BoxOp_Euler.hpp:30:6: note: candidate: ‘template<class T, Proto::MemType MEM> void f_consToPrim_(Proto::Var<T, 4, MEM>&, const Proto::Var<T, 4, MEM>&, MyDouble2)’
+   30 | void f_consToPrim_(
+      |      ^~~~~~~~~~~~~
+BoxOp_Euler.hpp:30:6: note:   template argument deduction/substitution failed:
+/home/sanilr/proto/include/base/implem/Proto_BoxDataImplem.H:6:74: note:   deduced conflicting types for parameter ‘T’ (‘MyDouble2’ and ‘double’)
+    6 |     inline ACCEL_DECORATION void operator()(T... args) const { local_name(args...);} \
+BoxOp_Euler.hpp:51:1: note: in expansion of macro ‘PROTO_KERNEL_END’
+   51 | PROTO_KERNEL_END(f_consToPrim_, f_consToPrim)
+      | ^~~~~~~~~~~~~~~~
+BoxOp_Euler.hpp: In instantiation of ‘void BoxOp_Euler<T, MEM>::flux(Proto::BoxData<T, 4>&, const Proto::BoxData<T, 4>&, int) const [with T = double; Proto::MemType MEM = Proto::HOST]’:
+BoxOp_Euler.hpp:201:17:   required from here
+BoxOp_Euler.hpp:210:16: error: conversion from ‘BoxData<double,[...]>’ to non-scalar type ‘BoxData<MyDouble2,[...]>’ requested
+  210 |         Vector U = Operator::deconvolve(a_U);
+      |                ^
+BoxOp_Euler.hpp:213:29: error: cannot convert ‘Vector’ {aka ‘Proto::BoxData<MyDouble2, 4>’} to ‘const Proto::BoxData<double, 4>&’
+  213 |         computeFlux(a_flux, W_ave, a_dir);
+      |                             ^~~~~
+      |                             |
+      |                             Vector {aka Proto::BoxData<MyDouble2, 4>}
+BoxOp_Euler.hpp:181:41: note:   initializing argument 2 of ‘void BoxOp_Euler<T, MEM>::computeFlux(Proto::BoxData<T, 4>&, const Proto::BoxData<T, 4>&, int) const [with T = double; Proto::MemType MEM = Proto::HOST]’
+  181 |             const BoxData<T, NUMCOMPS>& a_W_ave,
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+make: *** [proto] Error 1

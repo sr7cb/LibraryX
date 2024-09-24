@@ -328,7 +328,7 @@ public:
         sizes = sizes1;
         name = name1;
     }
-
+ 
   /** Sets <tt>FFTXProblem::sizes</tt>. */
     void setSizes(const std::vector<int>& sizes1);
 

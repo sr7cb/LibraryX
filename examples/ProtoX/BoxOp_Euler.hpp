@@ -2,7 +2,7 @@
 #ifndef _BOX_OP_EULER_
 #define _BOX_OP_EULER_
 #include "Proto.H"
-#include "shim.hpp"
+// #include "shim.hpp"
 #define NUMCOMPS DIM+2
 
 
@@ -124,10 +124,10 @@ void f_getFlux_(
 
     a_F(a_dir+1) += a_W(NUMCOMPS-1);
     a_F(NUMCOMPS-1) = gamma/(gamma - 1.0) * a_W(a_dir+1) * a_W(NUMCOMPS-1) + 0.5 * F0 * W2;
-    for (int c = 0 ; c < NUMCOMPS; c++)
-      {
-        a_F(c) = -a_F(c);
-      }
+    // for (int c = 0 ; c < NUMCOMPS; c++)
+    //   {
+    //     a_F(c) = -a_F(c);
+    //   }
 }
 PROTO_KERNEL_END(f_getFlux_, f_getFlux)
 
@@ -193,7 +193,7 @@ class BoxOp_Euler : public BoxOp<T, NUMCOMPS, 1, MEM>
 #endif
         a_flux = forall<MyDouble,NUMCOMPS>(f_getFlux, W_f, a_dir, gamma);
 #if DIM>1
-        // a_flux += m_laplacian_f[a_dir](F_bar_f, 1.0/24.0);
+        a_flux += m_laplacian_f[a_dir](F_bar_f, 1.0/24.0);
 #endif
     }
    
@@ -236,24 +236,24 @@ class BoxOp_Euler : public BoxOp<T, NUMCOMPS, 1, MEM>
         std::cout << "begin computation" << std::endl;
         a_Rhs.setVal(0.0);
         Vector W_bar = forall<MyDouble, NUMCOMPS>(f_consToPrim, a_U, gamma);
-        // Vector U = Operator::deconvolve(a_U);
-        // Vector W = forall<MyDouble, NUMCOMPS>(f_consToPrim, U, gamma);
-        // Vector W_ave = Operator::_convolve(W, W_bar);
+        Vector U = Operator::deconvolve(a_U);
+        Vector W = forall<MyDouble, NUMCOMPS>(f_consToPrim, U, gamma);
+        Vector W_ave = Operator::_convolve(W, W_bar);
         
-        // // // COMPUTE MAX WAVE SPEED
+        // // COMPUTE MAX WAVE SPEED
         // Box rangeBox = a_U.box().grow(-ghost());
         // Scalar uabs = forall<MyDouble>(f_waveSpeedBound, rangeBox, W, gamma);
         // umax = uabs.absMax();
 
-        // // // COMPUTE DIV FLUXES
-        // for (int dir = 0; dir < DIM; dir++)
-        // {
-        //     computeFlux(a_fluxes[dir], W_ave, dir);
-        //     // a_Rhs += m_divergence[dir](a_fluxes[dir]);
-        // }
-        // a_Rhs *= (a_scale / dx); //Assuming isotropic grid spacing
-        std::cout << "end computation" << std::endl;
-        exit(0);
+        // // COMPUTE DIV FLUXES
+        for (int dir = 0; dir < DIM; dir++)
+        {
+            computeFlux(a_fluxes[dir], W_ave, dir);
+            a_Rhs += m_divergence[dir](a_fluxes[dir]);
+        }
+        a_Rhs *= (a_scale / dx); //Assuming isotropic grid spacing
+        // std::cout << "end computation" << std::endl;
+        // exit(0);
     }
 #ifdef PR_AMR
   static inline void generateTags(
