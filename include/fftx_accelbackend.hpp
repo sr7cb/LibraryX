@@ -87,7 +87,7 @@ else ()
 endif ()
 
 add_library                ( tmp SHARED spiral_generated.c ${FFTX_ACCEL_DIR}/src/model.c  ${FFTX_ACCEL_DIR}/src/utils.c ${FFTX_ACCEL_DIR}/src/accel.c ${FFTX_ACCEL_DIR}/src/dfts.c )
-target_include_directories ( tmp PRIVATE /home/sanilr/fftx_accel/include ${SPIRAL_SOURCE_DIR}/namespaces)
+target_include_directories ( tmp PRIVATE ${FFTX_ACCEL_DIR}/include ${SPIRAL_SOURCE_DIR}/namespaces)
 target_compile_features    ( tmp PRIVATE cxx_std_11)
 target_compile_options     ( tmp PRIVATE ${_addl_options} )
 
