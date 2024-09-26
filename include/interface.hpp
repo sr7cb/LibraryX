@@ -101,10 +101,10 @@ inline void restore_input(int saved_fd)
 }
 
 inline std::string getFFTX() {
-     const char * tmp2 = std::getenv("FFTX_HOME");
+     const char * tmp2 = std::getenv("LIBRARYX_HOME");
     std::string tmp(tmp2 ? tmp2 : "");
     if (tmp.empty()) {
-        std::cout << "[ERROR] No such variable found, please download and set FFTX_HOME env variable" << std::endl;
+        std::cout << "[ERROR] No such variable found, please download and set LIBRARYX_HOME env variable" << std::endl;
         exit(-1);
     }
     tmp += "/cache_jit_files/";
