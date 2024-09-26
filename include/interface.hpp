@@ -43,6 +43,7 @@
 // #else
 // #include "cpubackend.hpp"
 // #endif
+#include "fftx_accelbackend.hpp"
 #pragma once
 
 #if defined ( PRINTDEBUG )
@@ -305,6 +306,7 @@ public:
 
   /** Performs the transform. */
     void step();
+    void transform(bool flag);
     
     float(Executor::*generateFunc())(void*&);
 
@@ -452,6 +454,41 @@ inline std::string FFTXProblem::semantics2(bool flag) {
     // return nullptr;
 }
 
+
+inline void FFTXProblem::transform(bool flag){
+    
+    if(executors.find(sizes) != executors.end()) { //check in memory cache
+        if ( DEBUGOUT) std::cout << "cached size found, running cached instance\n";
+        run(executors.at(sizes));
+    }
+    else { //check filesystem cache
+        std::string file_name = getFromCache(name, sizes);
+        std::ifstream ifs ( file_name );
+        if(ifs) {
+            if ( DEBUGOUT) std::cout << "found cached file on disk\n";
+            std::string fcontent ( ( std::istreambuf_iterator<char>(ifs) ),
+                                    ( std::istreambuf_iterator<char>()    ) );
+            res = fcontent;
+            Executor e;
+            e.execute(fcontent);
+            executors.insert(std::make_pair(sizes, e));
+            run(e);
+        } 
+        else { //generate code at runtime
+            if ( DEBUGOUT) std::cout << "haven't seen size, generating\n";
+            res = semantics2(flag);
+            Executor e;
+            e.execute(res);
+            executors.insert(std::make_pair(sizes, e));
+            run(e);
+            printToCache(res, name, sizes);
+        }
+    }
+    // }
+}
+
+
+
 inline void FFTXProblem::step(){
     
     // transformTuple_t *tupl = getLibTransform(name, sizes);
@@ -521,7 +558,7 @@ inline void FFTXProblem::step(){
     }
     // }
 }
-
+/*
 inline float(Executor::*FFTXProblem::generateFunc())(void*&) {
     if(executors.find(sizes) != executors.end()) { //check in memory cache
         if ( DEBUGOUT) std::cout << "cached size found, running cached instance\n";
@@ -552,14 +589,14 @@ inline float(Executor::*FFTXProblem::generateFunc())(void*&) {
         }
     }
 }
-
+*/
 
 inline void FFTXProblem::run(Executor e) {
-    // #if (defined FFTX_HIP || FFTX_CUDA || FFTX_SYCL)
-    gpuTime = e.initAndLaunch(args);
-    // #else
-    // gpuTime = e.initAndLaunch(args, name);
-    // #endif
+    #if (defined FFTX_HIP || FFTX_CUDA || FFTX_SYCL)
+      gpuTime = e.initAndLaunch(args);
+    #else
+    gpuTime = e.initAndLaunch(args, name);
+    #endif
 }
 
 inline float FFTXProblem::getTime() {
