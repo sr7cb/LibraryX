@@ -34,16 +34,17 @@
 #include <string>
 #include <array>
 #include <chrono>
-// #if defined FFTX_CUDA
-// #include "cudabackend.hpp"
-// #elif defined FFTX_HIP
-// #include "hipbackend.hpp"
-// #elif defined FFTX_SYCL
-// #include "syclbackend.hpp"
-// #else
-// #include "cpubackend.hpp"
-// #endif
+#if defined LIBRARYX_CUDA
+#include "cudabackend.hpp"
+#elif defined LIBRARYX_HIP
+#include "hipbackend.hpp"
+#elif defined LIBRARYX_SYCL
+#include "syclbackend.hpp"
+#elif defined LIBRARYX_FFTX_ASIC
 #include "fftx_accelbackend.hpp"
+#else
+#include "cpubackend.hpp"
+#endif
 #pragma once
 
 #if defined ( PRINTDEBUG )
@@ -129,14 +130,16 @@ inline std::string getFromCache(std::string name, std::vector<int> sizes) {
     for(int i = 1; i< sizes.size(); i++) {
         oss << "x" << sizes.at(i);
     }
-    #if defined FFTX_HIP 
-        oss << "_HIP" << ".txt";
-    #elif defined FFTX_CUDA 
-        oss << "_CUDA" << ".txt";
-    #elif defined FFTX_SYCL
-	oss << "_SYCL" << ".txt";
+    #if defined LIBRARYX_HIP 
+        oss << "_HIP.txt";
+    #elif defined LIBRARYX_CUDA 
+        oss << "_CUDA.txt";
+    #elif defined LIBRARYX_SYCL
+	oss << "_SYCL.txt";
+    #elif defined LIBRARYX_FFTX_ASIC
+        oss << "_ASIC.txt";
     #else
-        oss << "_CPU" << ".txt";
+        oss << "_CPU.txt";
     #endif
     return oss.str();
 }
@@ -160,12 +163,14 @@ inline void printToCache(std::string spiral_out, std::string name, std::vector<i
     for(int i = 1; i< sizes.size(); i++) {
         file_name.append("x"+std::to_string(sizes.at(i)));
     }
-    #if defined FFTX_HIP
+    #if defined LIBRARYX_HIP
         file_name.append("_HIP.txt");
-    #elif defined FFTX_CUDA 
+    #elif defined LIBRARYX_CUDA 
         file_name.append("_CUDA.txt");
-    #elif defined FFTX_SYCL
-	file_name.append("_SYCL.txt");
+    #elif defined LIBRARYX_SYCL
+	    file_name.append("_SYCL.txt");
+    #elif defined LIBRARYX_FFTX_ASIC
+	    file_name.append("_ASIC.txt");
     #else
         file_name.append("_CPU.txt");
     #endif
@@ -173,7 +178,7 @@ inline void printToCache(std::string spiral_out, std::string name, std::vector<i
     while(spiral_out.back() != '}') {
         spiral_out.pop_back();
     }
-    #if (defined FFTX_CUDA || FFTX_HIP || FFTX_SYCL)
+    #if (defined LIBRARYX_CUDA || LIBRARYX_HIP || LIBRARYX_SYCL)
     spiral_out = spiral_out.substr(spiral_out.find("spiral> JIT BEGIN"));
     #else
     spiral_out = spiral_out.substr(spiral_out.find("#include"));
@@ -185,14 +190,14 @@ inline void printToCache(std::string spiral_out, std::string name, std::vector<i
 
 inline void getImportAndConf() {
     std::cout << "Load(fftx);\nImportAll(fftx);\n";
-    #if (defined FFTX_HIP || FFTX_CUDA || FFTX_SYCL)
+    #if (defined LIBRARYX_HIP || LIBRARYX_CUDA || LIBRARYX_SYCL)
     std::cout << "ImportAll(simt);\nLoad(jit);\nImport(jit);\n";
     #endif
-    #if defined FFTX_HIP 
+    #if defined LIBRARYX_HIP 
     std::cout << "conf := FFTXGlobals.defaultHIPConf();\n";
-    #elif defined FFTX_CUDA 
+    #elif defined LIBRARYX_CUDA 
     std::cout << "conf := LocalConfig.fftx.confGPU();\n";
-    #elif defined FFTX_SYCL
+    #elif defined LIBRARYX_SYCL
     std::cout << "conf := FFTXGlobals.defaultOpenCLConf();\n";
     #else
     std::cout << "conf := LocalConfig.fftx.defaultConf();\n";
@@ -202,11 +207,11 @@ inline void getImportAndConf() {
 inline void printJITBackend(std::string name, std::vector<int> sizes) {
     std::string tmp = getFFTX();
     std::cout << "if 1 = 1 then opts:=conf.getOpts(transform);\ntt:= opts.tagIt(transform);\nif(IsBound(fftx_includes)) then opts.includes:=fftx_includes;fi;\nc:=opts.fftxGen(tt);\n fi;\n";
-    #if defined FFTX_HIP
+    #if defined LIBRARYX_HIP
         std::cout << "PrintHIPJIT(c,opts);" << std::endl;
-    #elif defined FFTX_CUDA 
+    #elif defined LIBRARYX_CUDA 
         std::cout << "PrintJIT2(c,opts);" << std::endl;
-    #elif defined FFTX_SYCL
+    #elif defined LIBRARYX_SYCL
 	std::cout << "PrintOpenCLJIT(c,opts);" << std::endl;
     #else
         std::cout << "opts.prettyPrint(c);" << std::endl;
@@ -376,7 +381,7 @@ inline std::string FFTXProblem::semantics2() {
         close(p[0]);
     #endif
     if(PRINTSCRIPT) std::cout << script << std::endl;
-    #if defined(FFTX_HIP) || defined(FFTX_CUDA) || defined(FFTX_SYCL)
+    #if defined(LIBRARYX_HIP) || defined(LIBRARYX_CUDA) || defined(LIBRARYX_SYCL)
     if(result.find("spiral> JIT BEGIN") == std::string::npos) {
       //  if(DEBUGOUT) std::cout << script << std::endl;
       std::cout << script << std::endl;
@@ -432,7 +437,7 @@ inline std::string FFTXProblem::semantics2(bool flag) {
         close(p[0]);
     #endif
     if(PRINTSCRIPT) std::cout << script << std::endl;
-    #if defined(FFTX_HIP) || defined(FFTX_CUDA) || defined(FFTX_SYCL)
+    #if defined(LIBRARYX_HIP) || defined(LIBRARYX_CUDA) || defined(LIBRARYX_SYCL)
     if(result.find("spiral> JIT BEGIN") == std::string::npos) {
       //  if(DEBUGOUT) std::cout << script << std::endl;
       std::cout << script << std::endl;
