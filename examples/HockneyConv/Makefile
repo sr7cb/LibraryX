@@ -11,5 +11,8 @@ cuda:
 hip:
 	hipcc -O3 -w hockney_test_hip.cpp -o hip_hockney -lrocfft
 
+mkl:
+	icpx -ggdb -fsycl hockney_test_mkl.cpp -o mkl_hockney -lmkl_sycl -lmkl_intel_ilp64 -lmkl_core -lmkl_sequential -lOpenCL	
+
 clean:
 	rm *_hockney
