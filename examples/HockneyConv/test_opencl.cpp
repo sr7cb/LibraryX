@@ -107,7 +107,7 @@ std::cout << "Max Global Size: {" << maxGlobalSize[0] << ", " << maxGlobalSize[1
 
 
     const size_t bufferSize = 32*32*128;
-    const size_t bufferSize2 = 64*64*(256/2+1);
+    const size_t bufferSize2 = 64*64*(256/2+1)*2;
     std::vector<double> X(bufferSize, 1.0); // Initialize with 1.0
     std::vector<double> X2(bufferSize2, 1.0); // Initialize with 1.0
     std::vector<double> Y(bufferSize, 0.0); // Initialize with 1.0
