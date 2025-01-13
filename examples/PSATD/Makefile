@@ -7,3 +7,6 @@ test:
 
 cuda:
 	nvcc -ccbin g++-9 -std=c++17 -g -G test_psatd_cuda.cu -o cuda_psatd -lcufft
+
+nooop:
+	nvcc -ccbin g++-9 -std=c++17 -g -G test_psatd_cuda_nooop.cu -o nooop -lcufft
