@@ -4,6 +4,7 @@
 #include <cufft.h>
 #include <cuComplex.h>
 #include <vector> 
+#include "spiral_generated_psatd_cuda.hpp"
 
 
 template <typename T>
@@ -118,7 +119,9 @@ void Resample(const std::vector<int>& out = {1, 2, 3},
                 const std::vector<double>& shifts = {1, 2, 3}, 
                 double **output = NULL, 
                 double **input = NULL,
-                int index = 0) {
+                int index = 0,
+                cufftHandle plan = -1,
+                cufftHandle plan2 = -1) {
     // print1DArray<<<1,10>>>(input, 0);
     // cudaDeviceSynchronize();
 
@@ -138,8 +141,8 @@ void Resample(const std::vector<int>& out = {1, 2, 3},
 
     double* fft_out;
     cudaMalloc(&fft_out, out.at(0)*out.at(1)*((out.at(2)/2)+1) *2 *sizeof(double));
-    cufftHandle plan;
-    cufftPlan3d(&plan, out.at(0), out.at(1), out.at(2), CUFFT_D2Z);
+    // cufftHandle plan;
+    // cufftPlan3d(&plan, out.at(0), out.at(1), out.at(2), CUFFT_D2Z);
     cufftExecD2Z(plan, (cufftDoubleReal *)d_output, (cufftDoubleComplex *)fft_out);
 
     
@@ -152,8 +155,8 @@ void Resample(const std::vector<int>& out = {1, 2, 3},
 
     double * loutput;
     cudaMalloc(&loutput, out.at(0)*out.at(1)*out.at(2)*sizeof(double));
-    cufftHandle plan2;
-    cufftPlan3d(&plan2, out.at(0), out.at(1), out.at(2), CUFFT_Z2D);
+    // cufftHandle plan2;
+    // cufftPlan3d(&plan2, out.at(0), out.at(1), out.at(2), CUFFT_Z2D);
     cufftExecZ2D(plan2, (cufftDoubleComplex *)fft_out, (cufftDoubleReal *)loutput);
     
     int elems = (out.at(0)*out.at(1)*out.at(2) + threadsPerBlock -1)/(threadsPerBlock);
@@ -434,17 +437,10 @@ int main() {
   cudaDeviceSynchronize(); 
   std::cout << std::endl;*/
 
-  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 0);
-  Resample({n, n, n}, {np, np, n}, {0.0, -0.5, 0.0}, boxBig0, cudain, 1);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 1), nth(X, 1),
-  Resample({n, n, n}, {np, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 2);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 2), nth(X, 2),
-  Resample({n, n, n}, {n, n, np}, {-0.5, -0.5, 0.0}, boxBig0, cudain, 3);// TResample([n, n, n], [n, n, np], [-0.5, -0.5, 0.0]), nth(boxBig0, 3), nth(X, 3),
-  Resample({n, n, n}, {n, np, n}, {-0.5, 0.0, -0.5}, boxBig0, cudain, 4);// TResample([n, n, n], [n, np, n], [-0.5, 0.0, -0.5]), nth(boxBig0, 4), nth(X, 4),
-  Resample({n, n, n}, {np, n, n}, {0.0, -0.5, -0.5}, boxBig0, cudain, 5);// TResample([n, n, n], [np, n, n], [0.0, -0.5, -0.5]), nth(boxBig0, 5), nth(X, 5),
-  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 6);// TResample([n, n, n], [np, np, n], [0.0, 0.0, -0.5]), nth(boxBig0, 6), nth(X, 6),
-  Resample({n, n, n}, {np, n, np}, {0.0, -0.5, 0.0}, boxBig0, cudain, 7);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 7), nth(X, 7),
-  Resample({n, n, n}, {n, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 8);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 8), nth(X, 8),
-  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 9);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 9), nth(X, 9),
-  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 10);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 10), nth(X, 10),
+  cufftHandle resample_forward_plan;
+  cufftPlan3d(&resample_forward_plan, n,n,n, CUFFT_D2Z);
+  cufftHandle resample_inverse_plan;
+  cufftPlan3d(&resample_inverse_plan, n,n,n, CUFFT_Z2D);
 
   double * finput;
   cudaMalloc(&finput, n*n*n*sizeof(double));
@@ -455,6 +451,73 @@ int main() {
   int outgridSize = ((n*n*(n/2+1)*2) + blockSize-1)/(blockSize);
   cufftHandle plan1;
   cufftPlan3d(&plan1, n, n, n, CUFFT_D2Z);
+
+  std::vector<int> rows{0,6,12,18,23,28,33};
+  std::vector<int> cols{0,4,5,6,9,10,
+                            1,3,5,7,9,10,
+                            2,3,4,8,9,10,
+                            1,2,3,7,8,
+                            0,2,4,6,8,
+                            0,1,5,6,7};
+
+  int *drows, *dcols;
+  cudaMalloc(&drows, rows.size()*sizeof(int));
+  cudaMalloc(&dcols, cols.size()*sizeof(int));
+  cudaMemcpy(drows, rows.data(), rows.size()*sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(dcols, cols.data(), cols.size()*sizeof(int), cudaMemcpyHostToDevice);
+  double *cvals;
+  cudaMalloc(&cvals, cols.size()*2*sizeof(double));
+
+  double * ifinput;
+  cudaMalloc(&ifinput, n*n*(n/2+1)*2*sizeof(double));
+  double * ifoutput;
+  cudaMalloc(&ifoutput, n*n*n*sizeof(double));
+  int iingridSize = ((n*n*(n/2+1)*2) + blockSize-1)/(blockSize);
+  int ioutgridSize = ((n*n*n)+blockSize-1)/blockSize;
+  cufftHandle plan2;
+  cufftPlan3d(&plan2, n, n, n, CUFFT_Z2D);
+
+    cufftHandle forwardplan1;
+  cufftPlan3d(&forwardplan1, np, np, n, CUFFT_D2Z);
+  cufftHandle forwardplan2;
+  cufftPlan3d(&forwardplan2, np, n, np, CUFFT_D2Z);
+  cufftHandle forwardplan3;
+  cufftPlan3d(&forwardplan3, n, np, np, CUFFT_D2Z);
+  cufftHandle forwardplan4;
+  cufftPlan3d(&forwardplan4, n, n, np, CUFFT_D2Z);
+  cufftHandle forwardplan5;
+  cufftPlan3d(&forwardplan5, n, np, n, CUFFT_D2Z);
+  cufftHandle forwardplan6;
+  cufftPlan3d(&forwardplan6, np, n, n, CUFFT_D2Z);
+
+  cufftHandle inverseplan1;
+  cufftPlan3d(&inverseplan1, np, np, n, CUFFT_Z2D);
+  cufftHandle inverseplan2;
+  cufftPlan3d(&inverseplan2, np, n, np, CUFFT_Z2D);
+  cufftHandle inverseplan3;
+  cufftPlan3d(&inverseplan3, n, np, np, CUFFT_Z2D);
+  cufftHandle inverseplan4;
+  cufftPlan3d(&inverseplan4, n, n, np, CUFFT_Z2D);
+  cufftHandle inverseplan5;
+  cufftPlan3d(&inverseplan5, n, np, n, CUFFT_Z2D);
+  cufftHandle inverseplan6;
+  cufftPlan3d(&inverseplan6, np, n, n, CUFFT_Z2D);
+
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 0, resample_forward_plan, resample_inverse_plan);
+  Resample({n, n, n}, {np, np, n}, {0.0, -0.5, 0.0}, boxBig0, cudain, 1, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 1), nth(X, 1),
+  Resample({n, n, n}, {np, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 2, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 2), nth(X, 2),
+  Resample({n, n, n}, {n, n, np}, {-0.5, -0.5, 0.0}, boxBig0, cudain, 3, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [n, n, np], [-0.5, -0.5, 0.0]), nth(boxBig0, 3), nth(X, 3),
+  Resample({n, n, n}, {n, np, n}, {-0.5, 0.0, -0.5}, boxBig0, cudain, 4, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [n, np, n], [-0.5, 0.0, -0.5]), nth(boxBig0, 4), nth(X, 4),
+  Resample({n, n, n}, {np, n, n}, {0.0, -0.5, -0.5}, boxBig0, cudain, 5, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [np, n, n], [0.0, -0.5, -0.5]), nth(boxBig0, 5), nth(X, 5),
+  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 6, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [np, np, n], [0.0, 0.0, -0.5]), nth(boxBig0, 6), nth(X, 6),
+  Resample({n, n, n}, {np, n, np}, {0.0, -0.5, 0.0}, boxBig0, cudain, 7, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 7), nth(X, 7),
+  Resample({n, n, n}, {n, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 8, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 8), nth(X, 8),
+  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 9, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 9), nth(X, 9),
+  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 10, resample_forward_plan, resample_inverse_plan);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 10), nth(X, 10),
 
   copyArray<<<ingridSize, blockSize>>>(finput, boxBig1, n*n*n, 0);
   cufftExecD2Z(plan1, (cufftDoubleReal *)finput, (cufftDoubleComplex *)foutput);
@@ -500,21 +563,7 @@ int main() {
   cufftExecD2Z(plan1, (cufftDoubleReal *)finput, (cufftDoubleComplex *)foutput);
   copyArray<<<outgridSize, blockSize>>>(boxBig1, foutput, n*n*(n/2+1)*2, 10);
 
-  std::vector<int> rows{0,6,12,18,23,28,33};
-  std::vector<int> cols{0,4,5,6,9,10,
-                            1,3,5,7,9,10,
-                            2,3,4,8,9,10,
-                            1,2,3,7,8,
-                            0,2,4,6,8,
-                            0,1,5,6,7};
-
-  int *drows, *dcols;
-  cudaMalloc(&drows, rows.size()*sizeof(int));
-  cudaMalloc(&dcols, cols.size()*sizeof(int));
-  cudaMemcpy(drows, rows.data(), rows.size()*sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(dcols, cols.data(), cols.size()*sizeof(int), cudaMemcpyHostToDevice);
-  double *cvals;
-  cudaMalloc(&cvals, cols.size()*2*sizeof(double));
+  
   for(int i = 0; i < n; i++) {
     for(int j = 0; j < nf; j++) {
       for(int k = 0; k < n; k++) {
@@ -523,15 +572,6 @@ int main() {
       }
     }
   } 
-
-  double * ifinput;
-  cudaMalloc(&ifinput, n*n*(n/2+1)*2*sizeof(double));
-  double * ifoutput;
-  cudaMalloc(&ifoutput, n*n*n*sizeof(double));
-  int iingridSize = ((n*n*(n/2+1)*2) + blockSize-1)/(blockSize);
-  int ioutgridSize = ((n*n*n)+blockSize-1)/blockSize;
-  cufftHandle plan2;
-  cufftPlan3d(&plan2, n, n, n, CUFFT_Z2D);
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 0);
   cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
@@ -557,14 +597,35 @@ int main() {
   cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
   copyArray<<<ioutgridSize, blockSize>>>(boxBig3, foutput, n*n*n, 5);
   
+  Resample({np, np, n}, {n, n, n}, {0.0, 0.0, 0.5}, cudaout, boxBig3,0, forwardplan1, inverseplan1);// TResample([np, np, n], [n, n, n], [0.0, 0.0, 0.5]), nth(Y, 0), nth(boxBig3, 0),
+  Resample({np, n, np}, {n, n, n}, {0.0, 0.5, 0.0}, cudaout, boxBig3,1, forwardplan2, inverseplan2);// TResample([np, n, np], [n, n, n], [0.0, 0.5, 0.0]), nth(Y, 1), nth(boxBig3, 1),
+  Resample({n, np, np}, {n, n, n}, {0.5, 0.0, 0.0}, cudaout, boxBig3,2, forwardplan3, inverseplan3);// TResample([n, np, np], [n, n, n], [0.5, 0.0, 0.0]), nth(Y, 2), nth(boxBig3, 2),
 
-  Resample({np, np, n}, {n, n, n}, {0.0, 0.0, 0.5}, cudaout, boxBig3,0);// TResample([np, np, n], [n, n, n], [0.0, 0.0, 0.5]), nth(Y, 0), nth(boxBig3, 0),
-  Resample({np, n, np}, {n, n, n}, {0.0, 0.5, 0.0}, cudaout, boxBig3,1);// TResample([np, n, np], [n, n, n], [0.0, 0.5, 0.0]), nth(Y, 1), nth(boxBig3, 1),
-  Resample({n, np, np}, {n, n, n}, {0.5, 0.0, 0.0}, cudaout, boxBig3,2);// TResample([n, np, np], [n, n, n], [0.5, 0.0, 0.0]), nth(Y, 2), nth(boxBig3, 2),
+  Resample({n, n, np}, {n, n, n}, {0.5, 0.5, 0.0}, cudaout, boxBig3,3, forwardplan4, inverseplan4);// TResample([n, n, np], [n, n, n], [0.5, 0.5, 0.0]), nth(Y, 3), nth(boxBig3, 3),
+  Resample({n, np, n}, {n, n, n}, {0.5, 0.0, 0.5}, cudaout, boxBig3,4, forwardplan5, inverseplan5);// TResample([n, np, n], [n, n, n], [0.5, 0.0, 0.5]), nth(Y, 4), nth(boxBig3, 4),
+  Resample({np, n, n}, {n, n, n}, {0.0, 0.5, 0.5}, cudaout, boxBig3,5, forwardplan6, inverseplan6);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
 
-  Resample({n, n, np}, {n, n, n}, {0.5, 0.5, 0.0}, cudaout, boxBig3,3);// TResample([n, n, np], [n, n, n], [0.5, 0.5, 0.0]), nth(Y, 3), nth(boxBig3, 3),
-  Resample({n, np, n}, {n, n, n}, {0.5, 0.0, 0.5}, cudaout, boxBig3,4);// TResample([n, np, n], [n, n, n], [0.5, 0.0, 0.5]), nth(Y, 4), nth(boxBig3, 4),
-  Resample({np, n, n}, {n, n, n}, {0.0, 0.5, 0.5}, cudaout, boxBig3,5);
+  float milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  std::cout << "Time taken is " << milliseconds << " ms" << std::endl;
+
+  init_warpx_cuda();
+  cudaEvent_t start2, stop2;
+  cudaEventCreate(&start2);
+  cudaEventCreate(&stop2);
+  cudaEventRecord(start2);
+  
+  warpx_cuda(cudaout, cudain, cudasym, conf.cvar, conf.ep0var);
+  
+  cudaEventRecord(stop2);
+  cudaEventSynchronize(stop2);
+  float milliseconds2 = 0;
+  cudaEventElapsedTime(&milliseconds2, start2, stop2);
+  std::cout << "SPIRAL time taken: " << milliseconds2 << std::endl;
+  destroy_warpx_cuda();
 
   return 0;
 }

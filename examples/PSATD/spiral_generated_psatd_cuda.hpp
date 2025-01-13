@@ -4,7 +4,6 @@
  */
 
 #include <stdint.h>
-#include "CudaWarpXConst.h"
 __device__ double P1[5772800];
 __device__ double P2[5772800];
 __device__ double T128[3148800];
@@ -818,7 +817,7 @@ __global__ void ker_warpx_cuda2() {
     __syncthreads();
 }
 
-__global__ void ker_warpx_cuda3(double * *sym) {
+__global__ void ker_warpx_cuda3(double * *sym, double PhysConst_c, double PhysConst_ep0) {
     if (((threadIdx.y == 0))) {
         double a2696, a2698, a2703, a2704, a2705, a2706, a2707, a2708, 
                 a2709, a2710, a2711, a2712, a2713, a2714, a2715, a2716, 
@@ -1761,13 +1760,13 @@ __global__ void ker_warpx_cuda6(double * *Yptr) {
     __syncthreads();
 }
 
-void warpx_cuda(double * *Yptr, double * *Xptr, double * *sym) {
+void warpx_cuda(double * *Yptr, double * *Xptr, double * *sym, double PhysConst_c, double PhysConst_ep0) {
     dim3 b1638(4, 4, 40), b1639(5, 20, 10), b1640(5, 20, 10), b1641(1, 6, 41), b1642(5, 20, 10), b1643(5, 20, 10), b1644(4, 4, 40), g1(80, 11, 2), 
     g2(41, 11, 8), g3(41, 11, 8), g4(80, 80, 1), g5(41, 6, 8), g6(41, 6, 8), g7(80, 6, 2);
     ker_warpx_cuda0<<<g1, b1638>>>(Xptr);
     ker_warpx_cuda1<<<g2, b1639>>>();
     ker_warpx_cuda2<<<g3, b1640>>>();
-    ker_warpx_cuda3<<<g4, b1641>>>(sym);
+    ker_warpx_cuda3<<<g4, b1641>>>(sym, PhysConst_c, PhysConst_ep0);
     ker_warpx_cuda4<<<g5, b1642>>>();
     ker_warpx_cuda5<<<g6, b1643>>>();
     ker_warpx_cuda6<<<g7, b1644>>>(Yptr);
