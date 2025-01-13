@@ -3,6 +3,7 @@
 #include <hip/hip_complex.h>
 #include <vector> 
 #include <rocfft/rocfft.h>
+#include "spiral_generated_psatd_hip.hpp"
 
 
 template <typename T>
@@ -117,7 +118,11 @@ void Resample(const std::vector<int>& out = {1, 2, 3},
                 const std::vector<double>& shifts = {1, 2, 3}, 
                 double **output = NULL, 
                 double **input = NULL,
-                int index = 0) {
+                int index = 0,
+                rocfft_plan forward_plan = NULL,
+                rocfft_plan inverse_plan = NULL,
+                rocfft_execution_info forward_info = NULL,
+                rocfft_execution_info inverse_info = NULL) {
     // print1DArray<<<1,10>>>(input, 0);
     // cudaDeviceSynchronize();
 
@@ -138,18 +143,18 @@ void Resample(const std::vector<int>& out = {1, 2, 3},
 
     double* fft_out;
     hipMalloc(&fft_out, out.at(0)*out.at(1)*((out.at(2)/2)+1) *2 *sizeof(double));
-    rocfft_plan forward_plan;
-    size_t work_size = 0;
-    size_t lengths[3] = {static_cast<size_t>(out.at(0)), static_cast<size_t>(out.at(1)), static_cast<size_t>(out.at(2))};
-    rocfft_plan_create(&forward_plan, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
-                       3, lengths, 1, nullptr);
+    // rocfft_plan forward_plan;
+    // size_t work_size = 0;
+    // size_t lengths[3] = {static_cast<size_t>(out.at(0)), static_cast<size_t>(out.at(1)), static_cast<size_t>(out.at(2))};
+    // rocfft_plan_create(&forward_plan, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+    //                    3, lengths, 1, nullptr);
 
-    rocfft_plan_get_work_buffer_size(forward_plan, &work_size);
-    void* work_buffer;
-    hipMalloc(&work_buffer, work_size);
-    rocfft_execution_info forward_info;
-    rocfft_execution_info_create(&forward_info);
-    rocfft_execution_info_set_work_buffer(forward_info, work_buffer, work_size);
+    // rocfft_plan_get_work_buffer_size(forward_plan, &work_size);
+    // void* work_buffer;
+    // hipMalloc(&work_buffer, work_size);
+    // rocfft_execution_info forward_info;
+    // rocfft_execution_info_create(&forward_info);
+    // rocfft_execution_info_set_work_buffer(forward_info, work_buffer, work_size);
 
     rocfft_execute(forward_plan, (void**)&d_output, (void**)&fft_out, forward_info);
 
@@ -164,13 +169,13 @@ void Resample(const std::vector<int>& out = {1, 2, 3},
 
     double * loutput;
     hipMalloc(&loutput, out.at(0)*out.at(1)*out.at(2)*sizeof(double));
-    rocfft_plan inverse_plan;
-    rocfft_plan_create(&inverse_plan, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
-                       3, lengths, 1, nullptr);
+    // rocfft_plan inverse_plan;
+    // rocfft_plan_create(&inverse_plan, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+    //                    3, lengths, 1, nullptr);
 
-    rocfft_execution_info inverse_info;
-    rocfft_execution_info_create(&inverse_info);
-    rocfft_execution_info_set_work_buffer(inverse_info, work_buffer, work_size);
+    // rocfft_execution_info inverse_info;
+    // rocfft_execution_info_create(&inverse_info);
+    // rocfft_execution_info_set_work_buffer(inverse_info, work_buffer, work_size);
 
     rocfft_execute(inverse_plan, (void**)&fft_out, (void**)&loutput, inverse_info);
     
@@ -441,42 +446,167 @@ int main() {
 	hipMemcpy ( boxBig3, hostbb3, sizeof(double) * conf.outFields, hipMemcpyHostToDevice );
 
 
-  print2DArray<<<1,conf.inFields>>>(cudain, conf.inFields);
-  hipDeviceSynchronize();
-  std::cout << std::endl;
-  print2DArray<<<1,symFields>>>(cudasym, symFields);
-  hipDeviceSynchronize();
-  std::cout << std::endl;
-  print2DArray<<<1,conf.outFields>>>(cudaout, conf.inFields);
-  hipDeviceSynchronize();
-  std::cout << std::endl; 
-  print2DArray<<<1,conf.inFields>>>(boxBig0, conf.inFields);
-  hipDeviceSynchronize(); 
-  std::cout << std::endl;
-  print2DArray<<<1,conf.inFields>>>(boxBig1, conf.inFields);
-  hipDeviceSynchronize(); 
-  std::cout << std::endl;
-  print2DArray<<<1,conf.inFields>>>(boxBig2, conf.outFields);
-  hipDeviceSynchronize(); 
-  std::cout << std::endl;
-  print2DArray<<<1,conf.inFields>>>(boxBig3, conf.outFields);
-  hipDeviceSynchronize(); 
-  std::cout << std::endl;
+  // print2DArray<<<1,conf.inFields>>>(cudain, conf.inFields);
+  // hipDeviceSynchronize();
+  // std::cout << std::endl;
+  // print2DArray<<<1,symFields>>>(cudasym, symFields);
+  // hipDeviceSynchronize();
+  // std::cout << std::endl;
+  // print2DArray<<<1,conf.outFields>>>(cudaout, conf.inFields);
+  // hipDeviceSynchronize();
+  // std::cout << std::endl; 
+  // print2DArray<<<1,conf.inFields>>>(boxBig0, conf.inFields);
+  // hipDeviceSynchronize(); 
+  // std::cout << std::endl;
+  // print2DArray<<<1,conf.inFields>>>(boxBig1, conf.inFields);
+  // hipDeviceSynchronize(); 
+  // std::cout << std::endl;
+  // print2DArray<<<1,conf.inFields>>>(boxBig2, conf.outFields);
+  // hipDeviceSynchronize(); 
+  // std::cout << std::endl;
+  // print2DArray<<<1,conf.inFields>>>(boxBig3, conf.outFields);
+  // hipDeviceSynchronize(); 
+  // std::cout << std::endl;
 
-  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 0);
-  Resample({n, n, n}, {np, np, n}, {0.0, -0.5, 0.0}, boxBig0, cudain, 1);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 1), nth(X, 1),
-  Resample({n, n, n}, {np, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 2);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 2), nth(X, 2),
-  Resample({n, n, n}, {n, n, np}, {-0.5, -0.5, 0.0}, boxBig0, cudain, 3);// TResample([n, n, n], [n, n, np], [-0.5, -0.5, 0.0]), nth(boxBig0, 3), nth(X, 3),
-  Resample({n, n, n}, {n, np, n}, {-0.5, 0.0, -0.5}, boxBig0, cudain, 4);// TResample([n, n, n], [n, np, n], [-0.5, 0.0, -0.5]), nth(boxBig0, 4), nth(X, 4),
-  Resample({n, n, n}, {np, n, n}, {0.0, -0.5, -0.5}, boxBig0, cudain, 5);// TResample([n, n, n], [np, n, n], [0.0, -0.5, -0.5]), nth(boxBig0, 5), nth(X, 5),
-  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 6);// TResample([n, n, n], [np, np, n], [0.0, 0.0, -0.5]), nth(boxBig0, 6), nth(X, 6),
-  Resample({n, n, n}, {np, n, np}, {0.0, -0.5, 0.0}, boxBig0, cudain, 7);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 7), nth(X, 7),
-  Resample({n, n, n}, {n, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 8);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 8), nth(X, 8),
-  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 9);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 9), nth(X, 9),
-  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 10);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 10), nth(X, 10),
+ /*initial resample plans*/
+  rocfft_plan resample_forward_plan;
+  size_t work_size = 0;
+  size_t resample_lengths[3] = {static_cast<size_t>(n), static_cast<size_t>(n), static_cast<size_t>(n)};
+  rocfft_plan_create(&resample_forward_plan, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, resample_lengths, 1, nullptr);
 
-  
-  
+  rocfft_plan_get_work_buffer_size(resample_forward_plan, &work_size);
+  void* work_buffer;
+  hipMalloc(&work_buffer, work_size);
+  rocfft_execution_info resample_forward_info;
+  rocfft_execution_info_create(&resample_forward_info);
+  rocfft_execution_info_set_work_buffer(resample_forward_info, work_buffer, work_size);
+
+  rocfft_plan resample_inverse_plan;
+  rocfft_plan_create(&resample_inverse_plan, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, resample_lengths, 1, nullptr);
+
+  rocfft_execution_info resample_inverse_info;
+  rocfft_execution_info_create(&resample_inverse_info);
+  rocfft_execution_info_set_work_buffer(resample_inverse_info, work_buffer, work_size);
+  /*initial resample plans*/
+
+  /*fft plans*/
+   rocfft_plan forward_plan;
+  size_t lengths[3] = {static_cast<size_t>(n), static_cast<size_t>(n), static_cast<size_t>(n)};
+  rocfft_plan_create(&forward_plan, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, lengths, 1, nullptr);
+
+  rocfft_plan_get_work_buffer_size(forward_plan, &work_size);
+  void* work_buffer2;
+  hipMalloc(&work_buffer2, work_size);
+  rocfft_execution_info forward_info;
+  rocfft_execution_info_create(&forward_info);
+  rocfft_execution_info_set_work_buffer(forward_info, work_buffer2, work_size);
+
+  rocfft_plan inverse_plan;
+  rocfft_plan_create(&inverse_plan, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, lengths, 1, nullptr);
+
+  rocfft_execution_info inverse_info;
+  rocfft_execution_info_create(&inverse_info);
+  rocfft_execution_info_set_work_buffer(inverse_info, work_buffer, work_size);
+  /*fft plans*/
+
+  /*output resample plans*/
+  rocfft_plan output_forward_plan1;
+  size_t lengths1[3] = {static_cast<size_t>(np), static_cast<size_t>(np), static_cast<size_t>(n)};
+  rocfft_plan_create(&output_forward_plan1, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, lengths1, 1, nullptr);
+  rocfft_plan_get_work_buffer_size(output_forward_plan1, &work_size);
+  rocfft_execution_info forward_info1;
+  rocfft_execution_info_create(&forward_info1);
+  rocfft_execution_info_set_work_buffer(forward_info1, work_buffer, work_size);
+  rocfft_plan output_forward_plan2;
+  size_t lengths2[3] = {static_cast<size_t>(np), static_cast<size_t>(n), static_cast<size_t>(np)};
+  rocfft_plan_create(&output_forward_plan2, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, lengths2, 1, nullptr);
+  rocfft_plan_get_work_buffer_size(output_forward_plan2, &work_size);
+  rocfft_execution_info forward_info2;
+  rocfft_execution_info_create(&forward_info2);
+  rocfft_execution_info_set_work_buffer(forward_info2, work_buffer, work_size);
+  rocfft_plan output_forward_plan3;
+  size_t lengths3[3] = {static_cast<size_t>(n), static_cast<size_t>(np), static_cast<size_t>(np)};
+  rocfft_plan_create(&output_forward_plan3, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, lengths3, 1, nullptr);
+  rocfft_plan_get_work_buffer_size(output_forward_plan3, &work_size);
+  rocfft_execution_info forward_info3;
+  rocfft_execution_info_create(&forward_info3);
+  rocfft_execution_info_set_work_buffer(forward_info3, work_buffer, work_size);
+  rocfft_plan output_forward_plan4;
+  size_t lengths4[3] = {static_cast<size_t>(n), static_cast<size_t>(n), static_cast<size_t>(np)};
+  rocfft_plan_create(&output_forward_plan4, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, lengths4, 1, nullptr);
+  rocfft_plan_get_work_buffer_size(output_forward_plan4, &work_size);
+  rocfft_execution_info forward_info4;
+  rocfft_execution_info_create(&forward_info4);
+  rocfft_execution_info_set_work_buffer(forward_info4, work_buffer, work_size);
+  rocfft_plan output_forward_plan5;
+  size_t lengths5[3] = {static_cast<size_t>(n), static_cast<size_t>(np), static_cast<size_t>(n)};
+  rocfft_plan_create(&output_forward_plan5, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, lengths5, 1, nullptr);
+  rocfft_plan_get_work_buffer_size(output_forward_plan5, &work_size);
+  rocfft_execution_info forward_info5;
+  rocfft_execution_info_create(&forward_info5);
+  rocfft_execution_info_set_work_buffer(forward_info5, work_buffer, work_size);
+  rocfft_plan output_forward_plan6;
+  size_t lengths6[3] = {static_cast<size_t>(np), static_cast<size_t>(n), static_cast<size_t>(n)};
+  rocfft_plan_create(&output_forward_plan6, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
+                      3, lengths6, 1, nullptr);
+  rocfft_plan_get_work_buffer_size(output_forward_plan6, &work_size);
+  rocfft_execution_info forward_info6;
+  rocfft_execution_info_create(&forward_info6);
+  rocfft_execution_info_set_work_buffer(forward_info6, work_buffer, work_size);
+
+  rocfft_plan output_inverse_plan1;
+  rocfft_plan_create(&output_inverse_plan1, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, lengths1, 1, nullptr);
+  rocfft_execution_info inverse_info1;
+  rocfft_execution_info_create(&inverse_info1);
+  rocfft_execution_info_set_work_buffer(inverse_info1, work_buffer, work_size);
+
+  rocfft_plan output_inverse_plan2;
+  rocfft_plan_create(&output_inverse_plan2, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, lengths2, 1, nullptr);
+  rocfft_execution_info inverse_info2;
+  rocfft_execution_info_create(&inverse_info2);
+  rocfft_execution_info_set_work_buffer(inverse_info2, work_buffer, work_size);
+
+  rocfft_plan output_inverse_plan3;
+  rocfft_plan_create(&output_inverse_plan3, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, lengths3, 1, nullptr);
+  rocfft_execution_info inverse_info3;
+  rocfft_execution_info_create(&inverse_info3);
+  rocfft_execution_info_set_work_buffer(inverse_info3, work_buffer, work_size);
+
+  rocfft_plan output_inverse_plan4;
+  rocfft_plan_create(&output_inverse_plan4, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, lengths4, 1, nullptr);
+  rocfft_execution_info inverse_info4;
+  rocfft_execution_info_create(&inverse_info4);
+  rocfft_execution_info_set_work_buffer(inverse_info4, work_buffer, work_size);
+
+  rocfft_plan output_inverse_plan5;
+  rocfft_plan_create(&output_inverse_plan5, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, lengths5, 1, nullptr);
+  rocfft_execution_info inverse_info5;
+  rocfft_execution_info_create(&inverse_info5);
+  rocfft_execution_info_set_work_buffer(inverse_info5, work_buffer, work_size);
+
+  rocfft_plan output_inverse_plan6;
+  rocfft_plan_create(&output_inverse_plan6, rocfft_placement_notinplace, rocfft_transform_type_real_inverse, rocfft_precision_double,
+                      3, lengths6, 1, nullptr);
+  rocfft_execution_info inverse_info6;
+  rocfft_execution_info_create(&inverse_info6);
+  rocfft_execution_info_set_work_buffer(inverse_info6, work_buffer, work_size);
+  /*output resample plans*/
+
+  /*memory creation*/
   double * finput;
   hipMalloc(&finput, n*n*n*sizeof(double));
   double * foutput;
@@ -484,18 +614,47 @@ int main() {
   int blockSize = 256;
   int ingridSize = ((n*n*n)+blockSize-1)/blockSize;
   int outgridSize = ((n*n*(n/2+1)*2) + blockSize-1)/(blockSize);
-  rocfft_plan forward_plan;
-  size_t work_size = 0;
-  size_t lengths[3] = {static_cast<size_t>(n), static_cast<size_t>(n), static_cast<size_t>(n)};
-  rocfft_plan_create(&forward_plan, rocfft_placement_notinplace, rocfft_transform_type_real_forward, rocfft_precision_double,
-                      3, lengths, 1, nullptr);
 
-  rocfft_plan_get_work_buffer_size(forward_plan, &work_size);
-  void* work_buffer;
-  hipMalloc(&work_buffer, work_size);
-  rocfft_execution_info forward_info;
-  rocfft_execution_info_create(&forward_info);
-  rocfft_execution_info_set_work_buffer(forward_info, work_buffer, work_size);
+  std::vector<int> rows{0,6,12,18,23,28,33};
+  std::vector<int> cols{0,4,5,6,9,10,
+                            1,3,5,7,9,10,
+                            2,3,4,8,9,10,
+                            1,2,3,7,8,
+                            0,2,4,6,8,
+                            0,1,5,6,7};
+
+  int *drows, *dcols;
+  hipMalloc(&drows, rows.size()*sizeof(int));
+  hipMalloc(&dcols, cols.size()*sizeof(int));
+  hipMemcpy(drows, rows.data(), rows.size()*sizeof(int), hipMemcpyHostToDevice);
+  hipMemcpy(dcols, cols.data(), cols.size()*sizeof(int), hipMemcpyHostToDevice);
+  double *cvals;
+  hipMalloc(&cvals, cols.size()*2*sizeof(double));
+
+  double * ifinput;
+  hipMalloc(&ifinput, n*n*(n/2+1)*2*sizeof(double));
+  double * ifoutput;
+  hipMalloc(&ifoutput, n*n*n*sizeof(double));
+  int iingridSize = ((n*n*(n/2+1)*2) + blockSize-1)/(blockSize);
+  int ioutgridSize = ((n*n*n)+blockSize-1)/blockSize;
+  /*memory creation*/
+
+  hipEvent_t start, stop;
+  hipEventCreate(&start);
+  hipEventCreate(&stop);
+  hipEventRecord(start);
+  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 0, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);
+  Resample({n, n, n}, {np, np, n}, {0.0, -0.5, 0.0}, boxBig0, cudain, 1, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 1), nth(X, 1),
+  Resample({n, n, n}, {np, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 2, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 2), nth(X, 2),
+  Resample({n, n, n}, {n, n, np}, {-0.5, -0.5, 0.0}, boxBig0, cudain, 3, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [n, n, np], [-0.5, -0.5, 0.0]), nth(boxBig0, 3), nth(X, 3),
+  Resample({n, n, n}, {n, np, n}, {-0.5, 0.0, -0.5}, boxBig0, cudain, 4, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [n, np, n], [-0.5, 0.0, -0.5]), nth(boxBig0, 4), nth(X, 4),
+  Resample({n, n, n}, {np, n, n}, {0.0, -0.5, -0.5}, boxBig0, cudain, 5, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [np, n, n], [0.0, -0.5, -0.5]), nth(boxBig0, 5), nth(X, 5),
+  Resample({n, n, n}, {np, np, n}, {0.0, 0.0, -0.5}, boxBig0, cudain, 6, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [np, np, n], [0.0, 0.0, -0.5]), nth(boxBig0, 6), nth(X, 6),
+  Resample({n, n, n}, {np, n, np}, {0.0, -0.5, 0.0}, boxBig0, cudain, 7, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [np, n, np], [0.0, -0.5, 0.0]), nth(boxBig0, 7), nth(X, 7),
+  Resample({n, n, n}, {n, np, np}, {-0.5, 0.0, 0.0}, boxBig0, cudain, 8, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [n, np, np], [-0.5, 0.0, 0.0]), nth(boxBig0, 8), nth(X, 8),
+  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 9, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 9), nth(X, 9),
+  Resample({n, n, n}, {np, np, np}, {0.0, 0.0, 0.0}, boxBig0, cudain, 10, resample_forward_plan, resample_inverse_plan, resample_forward_info, resample_inverse_info);// TResample([n, n, n], [np, np, np], [0.0, 0.0, 0.0]), nth(boxBig0, 10), nth(X, 10),
+ 
 
   copyArray<<<ingridSize, blockSize>>>(finput, boxBig1, n*n*n, 0);
   hipLaunchKernelGGL(copyArray, ingridSize, blockSize, 0, 0, finput, boxBig1, n*n*n, 0);
@@ -541,23 +700,7 @@ int main() {
   rocfft_execute(forward_plan, (void**)&finput, (void**)&foutput, forward_info);
   copyArray<<<outgridSize, blockSize>>>(boxBig1, foutput, n*n*(n/2+1)*2, 10);
 
-  /*
 
-  std::vector<int> rows{0,6,12,18,23,28,33};
-  std::vector<int> cols{0,4,5,6,9,10,
-                            1,3,5,7,9,10,
-                            2,3,4,8,9,10,
-                            1,2,3,7,8,
-                            0,2,4,6,8,
-                            0,1,5,6,7};
-
-  int *drows, *dcols;
-  hipMalloc(&drows, rows.size()*sizeof(int));
-  hipMalloc(&dcols, cols.size()*sizeof(int));
-  hipMemcpy(drows, rows.data(), rows.size()*sizeof(int), hipMemcpyHostToDevice);
-  hipMemcpy(dcols, cols.data(), cols.size()*sizeof(int), hipMemcpyHostToDevice);
-  double *cvals;
-  hipMalloc(&cvals, cols.size()*2*sizeof(double));
   for(int i = 0; i < n; i++) {
     for(int j = 0; j < nf; j++) {
       for(int k = 0; k < n; k++) {
@@ -569,48 +712,62 @@ int main() {
     }
   } 
 
-  double * ifinput;
-  hipMalloc(&ifinput, n*n*(n/2+1)*2*sizeof(double));
-  double * ifoutput;
-  hipMalloc(&ifoutput, n*n*n*sizeof(double));
-  int iingridSize = ((n*n*(n/2+1)*2) + blockSize-1)/(blockSize);
-  int ioutgridSize = ((n*n*n)+blockSize-1)/blockSize;
-  cufftHandle plan2;
-  cufftPlan3d(&plan2, n, n, n, CUFFT_Z2D);
+  // print2DArray<<<1,conf.outFields>>>(boxBig2, conf.outFields);
+  
+  
+  
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 0);
-  cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
+  rocfft_execute(inverse_plan, (void**)&ifinput, (void**)&ifoutput, inverse_info);
   copyArray<<<ioutgridSize, blockSize>>>(boxBig3, foutput, n*n*n, 0);
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 1);
-  cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
+  rocfft_execute(inverse_plan, (void**)&ifinput, (void**)&ifoutput, inverse_info);
   copyArray<<<ioutgridSize, blockSize>>>(boxBig3, foutput, n*n*n, 1);
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 2);
-  cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
+  rocfft_execute(inverse_plan, (void**)&ifinput, (void**)&ifoutput, inverse_info);
   copyArray<<<ioutgridSize, blockSize>>>(boxBig3, foutput, n*n*n, 2);
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 3);
-  cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
+  rocfft_execute(inverse_plan, (void**)&ifinput, (void**)&ifoutput, inverse_info);
   copyArray<<<ioutgridSize, blockSize>>>(boxBig3, foutput, n*n*n, 3);
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 4);
-  cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
+  rocfft_execute(inverse_plan, (void**)&ifinput, (void**)&ifoutput, inverse_info);
   copyArray<<<ioutgridSize, blockSize>>>(boxBig3, foutput, n*n*n, 4);
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 5);
-  cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
+  rocfft_execute(inverse_plan, (void**)&ifinput, (void**)&ifoutput, inverse_info);
   copyArray<<<ioutgridSize, blockSize>>>(boxBig3, foutput, n*n*n, 5);
+
+  Resample({np, np, n}, {n, n, n}, {0.0, 0.0, 0.5}, cudaout, boxBig3,0, output_forward_plan1, output_inverse_plan1, forward_info1, inverse_info1);// TResample([np, np, n], [n, n, n], [0.0, 0.0, 0.5]), nth(Y, 0), nth(boxBig3, 0),
+  Resample({np, n, np}, {n, n, n}, {0.0, 0.5, 0.0}, cudaout, boxBig3,1, output_forward_plan2, output_inverse_plan2, forward_info2, inverse_info2);// TResample([np, n, np], [n, n, n], [0.0, 0.5, 0.0]), nth(Y, 1), nth(boxBig3, 1),
+  Resample({n, np, np}, {n, n, n}, {0.5, 0.0, 0.0}, cudaout, boxBig3,2, output_forward_plan3, output_inverse_plan3, forward_info3, inverse_info3);// TResample([n, np, np], [n, n, n], [0.5, 0.0, 0.0]), nth(Y, 2), nth(boxBig3, 2),
+
+  Resample({n, n, np}, {n, n, n}, {0.5, 0.5, 0.0}, cudaout, boxBig3,3, output_forward_plan4, output_inverse_plan4, forward_info4, inverse_info4);// TResample([n, n, np], [n, n, n], [0.5, 0.5, 0.0]), nth(Y, 3), nth(boxBig3, 3),
+  Resample({n, np, n}, {n, n, n}, {0.5, 0.0, 0.5}, cudaout, boxBig3,4, output_forward_plan5, output_inverse_plan5, forward_info5, inverse_info5);// TResample([n, np, n], [n, n, n], [0.5, 0.0, 0.5]), nth(Y, 4), nth(boxBig3, 4),
+  Resample({np, n, n}, {n, n, n}, {0.0, 0.5, 0.5}, cudaout, boxBig3,5, output_forward_plan6, output_inverse_plan6, forward_info6, inverse_info6);
+  hipEventRecord(stop);
+  hipEventSynchronize(stop);
+  float milliseconds = 0;
+  hipEventElapsedTime(&milliseconds, start, stop);
+  std::cout << "Time taken: " << milliseconds << std::endl;
   
-
-  Resample({np, np, n}, {n, n, n}, {0.0, 0.0, 0.5}, cudaout, boxBig3,0);// TResample([np, np, n], [n, n, n], [0.0, 0.0, 0.5]), nth(Y, 0), nth(boxBig3, 0),
-  Resample({np, n, np}, {n, n, n}, {0.0, 0.5, 0.0}, cudaout, boxBig3,1);// TResample([np, n, np], [n, n, n], [0.0, 0.5, 0.0]), nth(Y, 1), nth(boxBig3, 1),
-  Resample({n, np, np}, {n, n, n}, {0.5, 0.0, 0.0}, cudaout, boxBig3,2);// TResample([n, np, np], [n, n, n], [0.5, 0.0, 0.0]), nth(Y, 2), nth(boxBig3, 2),
-
-  Resample({n, n, np}, {n, n, n}, {0.5, 0.5, 0.0}, cudaout, boxBig3,3);// TResample([n, n, np], [n, n, n], [0.5, 0.5, 0.0]), nth(Y, 3), nth(boxBig3, 3),
-  Resample({n, np, n}, {n, n, n}, {0.5, 0.0, 0.5}, cudaout, boxBig3,4);// TResample([n, np, n], [n, n, n], [0.5, 0.0, 0.5]), nth(Y, 4), nth(boxBig3, 4),
-  Resample({np, n, n}, {n, n, n}, {0.0, 0.5, 0.5}, cudaout, boxBig3,5);
-  */
+  init_warpx_cuda();
+  hipEvent_t start2, stop2;
+  hipEventCreate(&start2);
+  hipEventCreate(&stop2);
+  hipEventRecord(start2);
+  
+  warpx_cuda(cudaout, cudain, cudasym, conf.cvar, conf.ep0var);
+  
+  hipEventRecord(stop2);
+  hipEventSynchronize(stop2);
+  float milliseconds2 = 0;
+  hipEventElapsedTime(&milliseconds2, start2, stop2);
+  std::cout << "SPIRAL time taken: " << milliseconds2 << std::endl;
+  destroy_warpx_cuda();
   return 0;
 }
 
