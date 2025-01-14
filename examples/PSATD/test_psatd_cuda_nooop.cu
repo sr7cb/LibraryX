@@ -190,7 +190,7 @@ __global__ void createvals(double *values, double **sym, int length, int i, int 
     if(tid%2 == 0) {
       values[tid] = 0;
     } else if(tid== 1) {
-      values[threadIdx.x] = fcv / (n*n*n);
+      values[tid] = fcv / (n*n*n);
     } else if(tid== 3) {
       values[tid] = (-fmkz * c2 * fsckv) / (n*n*n);
     }else if(tid== 5) {
@@ -273,6 +273,106 @@ __global__ void spmv(double **output, double **input, int index, int length, int
   }
 }
 
+
+__global__ void threadspmv(double **output, double **input, double **sym, int totalelem, int length, int *rows, int *cols, int dimx, int dimy, int dimz, int n, int c2, int invep0) {
+  int tid = blockIdx.x *blockDim.x +threadIdx.x;
+  if(tid < totalelem) {
+    int i = tid / ((dimx*2) * dimy);
+    int j = (tid / dimy) % (dimx*2);
+    int k = tid % dimy;
+    double fmkx = sym[0][j];
+    double fmky = sym[1][k];
+    double fmkz = sym[2][i];
+    double fcv = sym[3][i*dimy*dimx + j *dimy + k];
+    double fsckv = sym[4][i*dimy*dimx + j *dimy + k];
+    double fx1v = sym[5][i*dimy*dimx + j *dimy + k];
+    double fx2v = sym[6][i*dimy*dimx + j *dimy + k];
+    double fx3v = sym[7][i*dimy*dimx + j *dimy + k];
+    double values[66];
+    for(int i = 0; i < 66; i++) {
+      if(i%2 == 0) {
+        values[i] = 0;
+      } else if(i == 1) {
+      values[i] = fcv / (n*n*n);
+      } else if(i == 3) {
+        values[i] = (-fmkz * c2 * fsckv) / (n*n*n);
+      }else if(i == 5) {
+        values[i] = (fmkz * c2 * fsckv )/ (n*n*n);
+      }else if(i == 7) {
+        values[i] = (-invep0 * fsckv) / (n*n*n);
+      }else if(i == 9) {
+        values[i] = (fmkx * fx3v) / (n*n*n);
+      }else if(i== 11) { //end first row
+        values[i] = (-fmkx * fx2v) / (n*n*n);
+      }else if(i== 13) {
+        values[i] = fcv / (n*n*n);
+      }else if(i== 15) {
+        values[i] = (-fmkz * c2 * fsckv) / (n*n*n);
+      }else if(i== 17) {
+        values[i] = (fmkx * c2 * fsckv )/ (n*n*n);
+      }else if(i== 19) {
+        values[i] = (-invep0 * fsckv) / (n*n*n);
+      }else if(i== 21) {
+        values[i] = fmky * fx3v / (n*n*n);
+      }else if(i== 23) {//end second row
+        values[i] = -fmky * fx2v / (n*n*n);
+      }else if(i== 25) {
+        values[i] = fcv / (n*n*n);
+      }else if(i== 27) {
+        values[i] = (-fmky * c2 * fsckv) / (n*n*n);
+      }else if(i== 29) {
+        values[i] = (fmkx * c2 * fsckv )/ (n*n*n);
+      }else if(i== 31) {
+        values[i] = (-invep0 * fsckv) / (n*n*n);
+      }else if(i== 33) {
+        values[i] = (fmkz * fx3v) / (n*n*n);
+      }else if(i== 35) { //end third row
+        values[i] = (-fmkz * fx2v) / (n*n*n);
+      }else if(i== 37) {
+        values[i] = (fmkz * fsckv) / (n*n*n);
+      }else if(i== 39) {
+        values[i] = (-fmky * fsckv )/ (n*n*n);
+      }else if(i== 41) {
+        values[i] = (fcv) / (n*n*n);
+      } else if( i == 43) {
+        values[i] = -fmkz * fx1v / (n*n*n);
+      } else if(i== 45) { //end fourth row
+        values[i] = fmky * fx1v / (n*n*n);
+      } else if(i== 47) {
+        values[i] = (fmkz * fsckv) / (n*n*n);
+      } else if(i== 49) {
+        values[i] = (-fmkx * fsckv )/ (n*n*n);
+      } else if(i== 51) {
+        values[i] = (fcv) / (n*n*n);
+      } else if(i== 53) {
+        values[i] = (fmkz * fx1v) / (n*n*n);
+      } else if(i== 55) { //end fifth row
+        values[i] = -fmkx * fx1v / (n*n*n);
+      } else if(i== 57) {
+        values[i] = (fmky * fsckv) / (n*n*n);
+      } else if(i== 59) {
+        values[i] = (-fmkx * fsckv )/ (n*n*n);
+      } else if(i== 61) {
+        values[i] = (fcv) / (n*n*n);
+      } else if(i== 63) {
+        values[i] = (-fmky * fx1v) / (n*n*n);
+      }else if(i== 65) {
+        values[i] = (fmkx * fx1v) / (n*n*n);
+      } 
+    }
+    for(int i = 0; i < length; i++) {
+      double outputreal = 0;
+      double outputcom = 0;
+      for(int j = rows[i]; j < rows[i+1]; j++) {
+        outputreal += input[cols[j]][2*tid] * values[2*j] - input[cols[j]][2*tid+1] * values[2*j+1];  
+        outputcom += input[cols[j]][2*tid] * values[2*j+1] + input[cols[j]][2*tid+1] * values[2*j];
+      }
+      output[i][2*tid] = outputreal;
+      output[i][2*tid+1] = outputcom;
+    }
+  }
+}
+
 struct WarpXconfig{
     int n = 80;
     int np = n+1;
@@ -291,6 +391,13 @@ struct WarpXconfig{
 
 
 int main() {
+
+  // size_t value;
+  // cudaDeviceGetLimit ( &value, cudaLimitStackSize);
+  // // std::cout << "stack limit is " << value << std::endl;
+  // cudaDeviceSetLimit ( cudaLimitStackSize, value*2);
+  // cudaDeviceGetLimit ( &value, cudaLimitStackSize);
+  // std::cout << "stack limit is " << value << std::endl;
 
   WarpXconfig conf;
     int n = conf.n;
@@ -355,7 +462,7 @@ int main() {
 	}
 	cudaMemcpy ( cudasym, hostsym, sizeof(double) * symFields, cudaMemcpyHostToDevice );
 
-  double **cudaout, **hostout;                                         
+  /*double **cudaout, **hostout;                                         
   cudaMalloc     ( &cudaout, sizeof(double) * conf.outFields );
 	cudaMallocHost ( &hostout, sizeof(double) * conf.outFields );
 	for (int comp = 0; comp < conf.outFields; comp++) {
@@ -415,27 +522,10 @@ int main() {
 	cudaMemcpy ( boxBig3, hostbb3, sizeof(double) * conf.outFields, cudaMemcpyHostToDevice );
 
 
-  /*print2DArray<<<1,conf.inFields>>>(cudain, conf.inFields);
-  cudaDeviceSynchronize();
-  std::cout << std::endl;
-  print2DArray<<<1,symFields>>>(cudasym, symFields);
-  cudaDeviceSynchronize();
-  std::cout << std::endl;
-  print2DArray<<<1,conf.outFields>>>(cudaout, conf.inFields);
-  cudaDeviceSynchronize();
-  std::cout << std::endl; 
-  print2DArray<<<1,conf.inFields>>>(boxBig0, conf.inFields);
-  cudaDeviceSynchronize(); 
-  std::cout << std::endl;
-  print2DArray<<<1,conf.inFields>>>(boxBig1, conf.inFields);
-  cudaDeviceSynchronize(); 
-  std::cout << std::endl;
-  print2DArray<<<1,conf.inFields>>>(boxBig2, conf.outFields);
-  cudaDeviceSynchronize(); 
-  std::cout << std::endl;
-  print2DArray<<<1,conf.inFields>>>(boxBig3, conf.outFields);
-  cudaDeviceSynchronize(); 
-  std::cout << std::endl;*/
+  //print2DArray<<<1,conf.inFields>>>(cudain, conf.inFields);
+  //cudaDeviceSynchronize();
+  //std::cout << std::endl;
+  
 
   cufftHandle resample_forward_plan;
   cufftPlan3d(&resample_forward_plan, n,n,n, CUFFT_D2Z);
@@ -564,14 +654,18 @@ int main() {
   copyArray<<<outgridSize, blockSize>>>(boxBig1, foutput, n*n*(n/2+1)*2, 10);
 
   
-  for(int i = 0; i < n; i++) {
-    for(int j = 0; j < nf; j++) {
-      for(int k = 0; k < n; k++) {
-        createvals<<<1,128>>>(cvals, cudasym, 2*cols.size(), i,j,k, nf/2,n,n,n,conf.c2,conf.invep0);
-        spmv<<<1,128>>>(boxBig2, boxBig1, i*(n*nf) + j*n + k, rows.size()-1, drows, dcols, cvals);
-      }
-    }
-  } 
+  // for(int i = 0; i < n; i++) {
+  //   for(int j = 0; j < nf; j++) {
+  //     for(int k = 0; k < n; k++) {
+  //       createvals<<<1,128>>>(cvals, cudasym, 2*cols.size(), i,j,k, nf/2,n,n,n,conf.c2,conf.invep0);
+  //       spmv<<<1,128>>>(boxBig2, boxBig1, i*(n*nf) + j*n + k, rows.size()-1, drows, dcols, cvals);
+  //     }
+  //   }
+  // } 
+
+  int grid = ((n*n*nf)+blockSize-1)/blockSize;
+  threadspmv<<<grid,blockSize>>>(boxBig2, boxBig1, cudasym, (n*n*nf), rows.size()-1, drows, dcols, nf/2, n, n, n, conf.c2, conf.invep0);
+  cudaDeviceSynchronize();
 
   copyArray<<<iingridSize, blockSize>>>(ifinput, boxBig2, n*n*(n/2+1)*2, 0);
   cufftExecZ2D(plan2, (cufftDoubleComplex *)ifinput, (cufftDoubleReal *)ifoutput);
@@ -610,22 +704,34 @@ int main() {
   float milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  std::cout << "Time taken is " << milliseconds << " ms" << std::endl;
+  std::cout << "Time taken is " << milliseconds << " ms" << std::endl;*/
 
-  init_warpx_cuda();
+  double **spiralout, **spiralhostout;                                         
+  cudaMalloc     ( &spiralout, sizeof(double) * conf.outFields );
+	cudaMallocHost ( &spiralhostout, sizeof(double) * conf.outFields );
+	for (int comp = 0; comp < conf.outFields; comp++) {
+		cudaMalloc ( &spiralhostout[comp], sizeof(double) * product3(output_sizes[comp]) );
+    int blockSize = 256;
+    int gridSize = (product3(output_sizes[comp]) + blockSize -1)/blockSize;
+    initArray<<<gridSize, blockSize>>>(spiralhostout[comp], product3(output_sizes[comp]));
+	}
+	cudaMemcpy ( spiralout, spiralhostout, sizeof(double) * conf.outFields, cudaMemcpyHostToDevice );
+
+  
+  // init_warpx_cuda();
   cudaEvent_t start2, stop2;
   cudaEventCreate(&start2);
   cudaEventCreate(&stop2);
   cudaEventRecord(start2);
   
-  warpx_cuda(cudaout, cudain, cudasym, conf.cvar, conf.ep0var);
+  warpx_cuda(spiralout, cudain, cudasym, conf.cvar, conf.ep0var);
   
   cudaEventRecord(stop2);
   cudaEventSynchronize(stop2);
   float milliseconds2 = 0;
   cudaEventElapsedTime(&milliseconds2, start2, stop2);
   std::cout << "SPIRAL time taken: " << milliseconds2 << std::endl;
-  destroy_warpx_cuda();
+  // destroy_warpx_cuda();
 
   return 0;
 }

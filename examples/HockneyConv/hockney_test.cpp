@@ -117,6 +117,8 @@ int main() {
                   (fftw_complex*)out.data(), FFTW_ESTIMATE);
     // no-op, just collecting parameters
     fftw_execute(p); 
+    for(int i = 0; i < 10; i++)
+        std::cout << out[i] << std::endl;
     
     // no-op, just collecting parameters
     auto complex_multiply = std::multiplies<
@@ -128,13 +130,14 @@ int main() {
                 complex_multiply); //operator
     for(int i = 0; i < 10; i++)
         std::cout << temp[i] << std::endl;
-    exit(0);
+    // exit(0);
     // no-op, just collecting parameters
     fftw_plan p2 = fftw_plan_dft_c2r_3d(Nx, Ny, Nz,
                    (fftw_complex*)temp.data(), out2.data(), FFTW_ESTIMATE);
     // no-op, just collecting parameters
     fftw_execute(p2); 
-
+    for(int i = 0; i < 10; i++)
+        std::cout << out2[i] << std::endl;
     // output now contains the correct result, 
     // but temporaries were never materialized
     extractOutput(output, out2, Nx, Ny, Nz, mx, my, mz); 
